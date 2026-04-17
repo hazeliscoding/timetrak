@@ -1,0 +1,98 @@
+/* TimeTrak design tokens. Source: docs/time_trak_mvp_ui_style_guide.md */
+
+:root {
+  color-scheme: light;
+
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-alt: #f1f3f6;
+
+  --text: #171a1f;
+  --text-muted: #596273;
+
+  --border: #c7cfdb;
+  --border-strong: #9aa6b2;
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-soft: #dbeafe;
+
+  --success: #157347;
+  --success-soft: #d1fadf;
+
+  --warning: #b45309;
+  --warning-soft: #fef0c7;
+
+  --danger: #b42318;
+  --danger-soft: #fee4e2;
+
+  --focus: #1d4ed8;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+
+  --font-sans: Inter, "Helvetica Neue", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0f1115;
+  --surface: #161a21;
+  --surface-alt: #1c2129;
+
+  --text: #e8ecf2;
+  --text-muted: #9aa6b2;
+
+  --border: #2a313c;
+  --border-strong: #3a4251;
+
+  --accent: #4b8bf5;
+  --accent-hover: #6ca1ff;
+  --accent-soft: #1d2a44;
+
+  --success: #34d399;
+  --success-soft: #0f2a1f;
+
+  --warning: #f59e0b;
+  --warning-soft: #2a1f0f;
+
+  --danger: #f87171;
+  --danger-soft: #2a1515;
+
+  --focus: #6ca1ff;
+}
+
+/* System preference when data-theme="system". */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    color-scheme: dark;
+    --bg: #0f1115;
+    --surface: #161a21;
+    --surface-alt: #1c2129;
+    --text: #e8ecf2;
+    --text-muted: #9aa6b2;
+    --border: #2a313c;
+    --border-strong: #3a4251;
+    --accent: #4b8bf5;
+    --accent-hover: #6ca1ff;
+    --accent-soft: #1d2a44;
+    --success: #34d399;
+    --success-soft: #0f2a1f;
+    --warning: #f59e0b;
+    --warning-soft: #2a1f0f;
+    --danger: #f87171;
+    --danger-soft: #2a1515;
+    --focus: #6ca1ff;
+  }
+}

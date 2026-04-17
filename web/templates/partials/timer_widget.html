@@ -1,0 +1,38 @@
+{{define "timer_widget"}}
+<section id="timer-widget" class="timer" aria-live="polite" aria-label="Timer">
+  {{if .Running}}
+    <div>
+      <div class="muted" style="font-size:.875rem">
+        <span class="badge badge-running" aria-label="Running">&#9679; Running</span>
+        {{.Running.ClientName}} — <strong>{{.Running.ProjectName}}</strong>
+        {{if .Running.Description}}<span class="muted">· {{.Running.Description}}</span>{{end}}
+      </div>
+      <div class="elapsed" data-timer-started-at="{{iso .Running.StartedAt}}">00:00:00</div>
+      <div class="muted" style="font-size:.8125rem">Started {{formatTime .Running.StartedAt}}</div>
+    </div>
+    <form hx-post="/timer/stop" hx-target="#timer-widget" hx-swap="outerHTML" style="margin-left:auto">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <button class="btn btn-primary" type="submit" data-focus-after-swap>Stop timer</button>
+    </form>
+  {{else}}
+    <form hx-post="/timer/start" hx-target="#timer-widget" hx-swap="outerHTML" class="row" style="flex:1">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <div class="field" style="flex:1;min-width:180px;margin-bottom:0">
+        <label for="start-project">Project</label>
+        <select id="start-project" name="project_id" required>
+          <option value="">Select…</option>
+          {{range .Projects}}<option value="{{.ID}}">{{.ClientName}} — {{.Name}}</option>{{end}}
+        </select>
+      </div>
+      <div class="field" style="flex:2;min-width:180px;margin-bottom:0">
+        <label for="start-desc">Description (optional)</label>
+        <input id="start-desc" name="description" type="text" maxlength="280">
+      </div>
+      <button class="btn btn-primary" type="submit" data-focus-after-swap>Start timer</button>
+    </form>
+    {{if .Error}}
+      <div class="flash flash-error" role="alert" aria-live="assertive" style="margin:0 0 0 var(--space-4)">{{.Error}}</div>
+    {{end}}
+  {{end}}
+</section>
+{{end}}

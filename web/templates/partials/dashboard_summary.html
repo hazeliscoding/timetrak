@@ -1,0 +1,37 @@
+{{define "dashboard_summary"}}
+<section id="dashboard-summary" class="card-row" aria-label="Summary">
+  <div class="card">
+    <div class="muted" style="font-size:.875rem">Today</div>
+    <div class="elapsed tabular">{{formatDuration .TodayTotalSeconds}}</div>
+    <div class="muted" style="font-size:.875rem">
+      <span class="badge badge-billable">Billable</span> {{formatDuration .TodayBillableSeconds}}
+      &nbsp;·&nbsp;
+      <span class="badge">Non-billable</span> {{formatDuration .TodayNonBillableSeconds}}
+    </div>
+  </div>
+  <div class="card">
+    <div class="muted" style="font-size:.875rem">This week</div>
+    <div class="elapsed tabular">{{formatDuration .WeekTotalSeconds}}</div>
+    <div class="muted" style="font-size:.875rem">
+      <span class="badge badge-billable">Billable</span> {{formatDuration .WeekBillableSeconds}}
+      &nbsp;·&nbsp;
+      <span class="badge">Non-billable</span> {{formatDuration .WeekNonBillableSeconds}}
+    </div>
+  </div>
+  <div class="card">
+    <div class="muted" style="font-size:.875rem">Estimated billable this week</div>
+    <div class="elapsed tabular">
+      {{if .WeekEstimatedBillable}}
+        {{range $cur, $amt := .WeekEstimatedBillable}}
+          <div>{{formatMinor $amt $cur}}</div>
+        {{end}}
+      {{else}}
+        <div class="muted" style="font-size:1rem">No billable entries yet</div>
+      {{end}}
+    </div>
+    {{if gt .EntriesWithoutRate 0}}
+      <div class="muted" style="font-size:.875rem"><span class="badge badge-warning">No rate</span> {{.EntriesWithoutRate}} entr{{if eq .EntriesWithoutRate 1}}y{{else}}ies{{end}} without a resolved rate</div>
+    {{end}}
+  </div>
+</section>
+{{end}}

@@ -1,0 +1,29 @@
+{{define "title"}}Dashboard · TimeTrak{{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <h1>Dashboard</h1>
+
+  {{template "timer_widget" .Timer}}
+
+  <div hx-get="/dashboard/summary" hx-trigger="timer-changed from:body, entries-changed from:body" hx-swap="outerHTML">
+    {{template "dashboard_summary" .Summary}}
+  </div>
+
+  <div class="card">
+    <h2 class="mt-0">Jump back in</h2>
+    {{if .Projects}}
+      <ul class="nav" style="padding:0;margin:0">
+        {{range .Projects}}
+          <li style="list-style:none">
+            <strong>{{.ClientName}}</strong> · {{.Name}}
+            {{if .DefaultBillable}}<span class="badge badge-billable">Billable</span>{{end}}
+          </li>
+        {{end}}
+      </ul>
+    {{else}}
+      <p class="muted">Add a <a href="/clients">client</a> and a <a href="/projects">project</a> to start tracking time.</p>
+    {{end}}
+  </div>
+</section>
+{{end}}

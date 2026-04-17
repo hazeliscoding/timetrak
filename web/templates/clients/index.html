@@ -1,0 +1,59 @@
+{{define "title"}}Clients · TimeTrak{{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <div class="row-between">
+    <h1>Clients</h1>
+    <form method="get" action="/clients" class="row">
+      <label for="archived-toggle" class="muted">
+        <input id="archived-toggle" type="checkbox" name="archived" value="1"
+               onchange="this.form.submit()" {{if .IncludeArchived}}checked{{end}}>
+        Include archived
+      </label>
+    </form>
+  </div>
+
+  <form method="post" action="/clients" class="card">
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+    <h2 class="mt-0">New client</h2>
+    {{if .NewForm.Error}}
+      <div class="flash flash-error" role="alert" aria-live="assertive">{{.NewForm.Error}}</div>
+    {{end}}
+    <div class="row">
+      <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
+        <label for="new-name">Name</label>
+        <input id="new-name" name="name" type="text" required value="{{.NewForm.Name}}">
+      </div>
+      <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
+        <label for="new-email">Contact email (optional)</label>
+        <input id="new-email" name="contact_email" type="email" value="{{.NewForm.ContactEmail}}">
+      </div>
+      <div style="align-self:end"><button class="btn btn-primary" type="submit">Add client</button></div>
+    </div>
+  </form>
+
+  {{if not .Clients}}
+    <div class="empty card">
+      <h2>No clients yet</h2>
+      <p class="muted">Add your first client above to start tracking projects against it.</p>
+    </div>
+  {{else}}
+  <table class="table" aria-label="Clients">
+    <caption class="sr-only">Clients in this workspace</caption>
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Contact email</th>
+        <th scope="col" class="num">Projects</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="sr-only">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody id="clients-tbody" aria-live="polite">
+      {{range .Clients}}{{template "client_row" (dict "CSRFToken" $.CSRFToken "Client" .)}}{{end}}
+    </tbody>
+  </table>
+  {{end}}
+</section>
+
+{{end}}

@@ -1,0 +1,7 @@
+{{define "flash"}}
+  {{if .}}
+    {{range .}}
+      <div class="flash flash-{{.Kind}}" role="status" aria-live="polite">{{.Message}}</div>
+    {{end}}
+  {{end}}
+{{end}}

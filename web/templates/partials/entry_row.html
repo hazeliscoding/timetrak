@@ -1,0 +1,59 @@
+{{define "entry_row"}}
+<tr id="entry-{{.Entry.ID}}">
+  {{if .Edit}}
+    <td colspan="7">
+      <form hx-patch="/time-entries/{{.Entry.ID}}" hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML" class="row">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <div class="field" style="margin-bottom:0;min-width:180px;flex:1">
+          <label for="edit-proj-{{.Entry.ID}}" class="sr-only">Project</label>
+          <select id="edit-proj-{{.Entry.ID}}" name="project_id" required autofocus data-focus-after-swap>
+            {{range .Projects}}
+              <option value="{{.ID}}" {{if eq .ID $.Entry.ProjectID}}selected{{end}}>{{.ClientName}} — {{.Name}}</option>
+            {{end}}
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0;flex:2">
+          <label for="edit-desc-{{.Entry.ID}}" class="sr-only">Description</label>
+          <input id="edit-desc-{{.Entry.ID}}" name="description" type="text" value="{{.Entry.Description}}">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="edit-start-{{.Entry.ID}}" class="sr-only">Started at (UTC ISO8601)</label>
+          <input id="edit-start-{{.Entry.ID}}" name="started_at" type="text" required value="{{iso .Entry.StartedAt}}" style="width:15rem">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="edit-end-{{.Entry.ID}}" class="sr-only">Ended at (UTC ISO8601)</label>
+          <input id="edit-end-{{.Entry.ID}}" name="ended_at" type="text" required value="{{if .Entry.EndedAt}}{{iso .Entry.EndedAt}}{{end}}" style="width:15rem">
+        </div>
+        <label class="row" style="gap:.25rem;margin:0">
+          <input type="checkbox" name="is_billable" {{if .Entry.IsBillable}}checked{{end}}>
+          Billable
+        </label>
+        <button class="btn btn-primary" type="submit">Save</button>
+        <button type="button" class="btn" hx-get="/time-entries/{{.Entry.ID}}/row" hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML">Cancel</button>
+        {{if .Error}}<span class="error" role="alert">{{.Error}}</span>{{end}}
+      </form>
+    </td>
+  {{else}}
+    <td>{{formatDate .Entry.StartedAt}}<br><span class="muted">{{formatTime .Entry.StartedAt}}{{if .Entry.EndedAt}}–{{formatTime .Entry.EndedAt}}{{end}}</span></td>
+    <td>{{.Entry.ClientName}}</td>
+    <td><strong>{{.Entry.ProjectName}}</strong></td>
+    <td>{{if .Entry.Description}}{{.Entry.Description}}{{else}}<span class="muted">—</span>{{end}}</td>
+    <td class="num tabular">{{formatDuration .Entry.DurationSeconds}}</td>
+    <td>
+      {{if .Entry.IsBillable}}<span class="badge badge-billable">Billable</span>
+      {{else}}<span class="muted">Non-billable</span>{{end}}
+      {{if not .Entry.EndedAt}}<span class="badge badge-running">&#9679; Running</span>{{end}}
+    </td>
+    <td class="row" style="justify-content:flex-end">
+      <button type="button" class="btn btn-ghost"
+              hx-get="/time-entries/{{.Entry.ID}}/edit"
+              hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML">Edit</button>
+      <form hx-delete="/time-entries/{{.Entry.ID}}" hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML"
+            hx-confirm="Delete this entry? Reports will recompute without it." style="margin:0">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <button type="submit" class="btn btn-ghost btn-danger">Delete</button>
+      </form>
+    </td>
+  {{end}}
+</tr>
+{{end}}

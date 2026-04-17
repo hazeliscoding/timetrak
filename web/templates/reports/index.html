@@ -1,0 +1,128 @@
+{{define "title"}}Reports · TimeTrak{{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <h1>Reports</h1>
+
+  <form method="get" action="/reports" class="card">
+    <h2 class="mt-0">Date range & grouping</h2>
+    <div class="row">
+      <div class="field" style="margin-bottom:0">
+        <label for="r-preset">Preset</label>
+        <select id="r-preset" name="preset" onchange="this.form.requestSubmit()">
+          <option value="this_week" {{if eq .Preset "this_week"}}selected{{end}}>This week</option>
+          <option value="last_week" {{if eq .Preset "last_week"}}selected{{end}}>Last week</option>
+          <option value="this_month" {{if eq .Preset "this_month"}}selected{{end}}>This month</option>
+          <option value="last_month" {{if eq .Preset "last_month"}}selected{{end}}>Last month</option>
+          <option value="today" {{if eq .Preset "today"}}selected{{end}}>Today</option>
+          <option value="custom" {{if eq .Preset "custom"}}selected{{end}}>Custom</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="r-from">From</label>
+        <input id="r-from" name="from" type="date" value="{{.From}}">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="r-to">To</label>
+        <input id="r-to" name="to" type="date" value="{{.To}}">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="r-group">Group by</label>
+        <select id="r-group" name="group">
+          <option value="day" {{if eq .Grouping "day"}}selected{{end}}>Day</option>
+          <option value="client" {{if eq .Grouping "client"}}selected{{end}}>Client</option>
+          <option value="project" {{if eq .Grouping "project"}}selected{{end}}>Project</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" type="submit">Apply</button>
+    </div>
+  </form>
+
+  {{template "report_summary" .Report.Totals}}
+
+  {{if gt .Report.NoRateCount 0}}
+    <div class="flash" role="status" aria-live="polite">
+      <span class="badge badge-warning">No rate</span>
+      {{.Report.NoRateCount}} billable entr{{if eq .Report.NoRateCount 1}}y{{else}}ies{{end}} in this range had no resolved rate and contributed 0.
+    </div>
+  {{end}}
+
+  {{if eq .Grouping "day"}}
+    {{if not .Report.ByDay}}
+      <div class="empty card" aria-live="polite">
+        <h2>No entries in this range</h2>
+        <p class="muted">Try a different preset or widen the dates.</p>
+      </div>
+    {{else}}
+    <table class="table" aria-label="Totals by day">
+      <caption>Totals by day</caption>
+      <thead><tr>
+        <th scope="col">Day</th><th scope="col" class="num">Total</th>
+        <th scope="col" class="num">Billable</th><th scope="col" class="num">Non-billable</th>
+      </tr></thead>
+      <tbody>
+        {{range .Report.ByDay}}
+          <tr>
+            <td>{{.Label}}</td>
+            <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
+            <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
+            <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+    {{end}}
+  {{else if eq .Grouping "client"}}
+    {{if not .Report.ByClient}}
+      <div class="empty card" aria-live="polite"><h2>No entries in this range</h2></div>
+    {{else}}
+    <table class="table" aria-label="Totals by client">
+      <caption>Totals by client</caption>
+      <thead><tr>
+        <th scope="col">Client</th><th scope="col" class="num">Total</th>
+        <th scope="col" class="num">Billable</th><th scope="col" class="num">Non-billable</th>
+        <th scope="col">Estimated billable</th>
+      </tr></thead>
+      <tbody>
+        {{range .Report.ByClient}}
+          <tr>
+            <td>{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</td>
+            <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
+            <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
+            <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
+            <td>{{range $cur, $amt := .EstimatedByCurrency}}<div>{{formatMinor $amt $cur}}</div>{{else}}<span class="muted">—</span>{{end}}</td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+    {{end}}
+  {{else}}
+    {{if not .Report.ByProject}}
+      <div class="empty card" aria-live="polite"><h2>No entries in this range</h2></div>
+    {{else}}
+    <table class="table" aria-label="Totals by project">
+      <caption>Totals by project</caption>
+      <thead><tr>
+        <th scope="col">Project</th><th scope="col">Client</th>
+        <th scope="col" class="num">Total</th>
+        <th scope="col" class="num">Billable</th>
+        <th scope="col" class="num">Non-billable</th>
+        <th scope="col">Estimated billable</th>
+      </tr></thead>
+      <tbody>
+        {{range .Report.ByProject}}
+          <tr>
+            <td>{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</td>
+            <td>{{.ClientLabel}}</td>
+            <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
+            <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
+            <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
+            <td>{{range $cur, $amt := .EstimatedByCurrency}}<div>{{formatMinor $amt $cur}}</div>{{else}}<span class="muted">—</span>{{end}}</td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+    {{end}}
+  {{end}}
+</section>
+{{end}}

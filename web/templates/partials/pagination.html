@@ -1,0 +1,13 @@
+{{define "pagination"}}
+  {{if gt .TotalPages 1}}
+    <nav class="row" aria-label="Pagination" style="margin-top: var(--space-4); justify-content: flex-end;">
+      {{if gt .Page 1}}
+        <a class="btn btn-ghost" href="?{{.PrevQuery}}" rel="prev">Previous</a>
+      {{end}}
+      <span class="muted">Page {{.Page}} of {{.TotalPages}}</span>
+      {{if lt .Page .TotalPages}}
+        <a class="btn btn-ghost" href="?{{.NextQuery}}" rel="next">Next</a>
+      {{end}}
+    </nav>
+  {{end}}
+{{end}}

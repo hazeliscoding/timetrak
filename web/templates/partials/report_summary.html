@@ -1,0 +1,26 @@
+{{define "report_summary"}}
+<section class="card-row" aria-label="Totals">
+  <div class="card">
+    <div class="muted" style="font-size:.875rem">Total</div>
+    <div class="elapsed tabular">{{formatDuration .TotalSeconds}}</div>
+  </div>
+  <div class="card">
+    <div class="muted" style="font-size:.875rem">Billable</div>
+    <div class="elapsed tabular">{{formatDuration .BillableSeconds}}</div>
+  </div>
+  <div class="card">
+    <div class="muted" style="font-size:.875rem">Non-billable</div>
+    <div class="elapsed tabular">{{formatDuration .NonBillableSeconds}}</div>
+  </div>
+  <div class="card">
+    <div class="muted" style="font-size:.875rem">Estimated billable</div>
+    <div class="elapsed tabular">
+      {{if .EstimatedByCurrency}}
+        {{range $cur, $amt := .EstimatedByCurrency}}<div>{{formatMinor $amt $cur}}</div>{{end}}
+      {{else}}
+        <div class="muted" style="font-size:1rem">—</div>
+      {{end}}
+    </div>
+  </div>
+</section>
+{{end}}

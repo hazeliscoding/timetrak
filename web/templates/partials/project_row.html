@@ -1,0 +1,52 @@
+{{define "project_row"}}
+<tr id="project-{{.Project.ID}}">
+  {{if .Edit}}
+    <td colspan="6">
+      <form hx-patch="/projects/{{.Project.ID}}" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML" class="row">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <div class="field" style="flex:1;margin-bottom:0">
+          <label class="sr-only" for="edit-pname-{{.Project.ID}}">Name</label>
+          <input id="edit-pname-{{.Project.ID}}" name="name" type="text" value="{{.Project.Name}}" required autofocus data-focus-after-swap>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="sr-only" for="edit-pcode-{{.Project.ID}}">Code</label>
+          <input id="edit-pcode-{{.Project.ID}}" name="code" type="text" value="{{.Project.Code}}" placeholder="Code" style="width:7rem">
+        </div>
+        <label class="row" style="gap:.25rem;margin:0">
+          <input type="checkbox" name="default_billable" {{if .Project.DefaultBillable}}checked{{end}}>
+          Default billable
+        </label>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn" hx-get="/projects/{{.Project.ID}}/row" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML">Cancel</button>
+        {{if .Error}}<span class="error" role="alert">{{.Error}}</span>{{end}}
+      </form>
+    </td>
+  {{else}}
+    <td><strong>{{.Project.Name}}</strong></td>
+    <td>{{.Project.ClientName}}</td>
+    <td>{{if .Project.Code}}<code>{{.Project.Code}}</code>{{else}}<span class="muted">—</span>{{end}}</td>
+    <td>
+      {{if .Project.DefaultBillable}}<span class="badge badge-billable">Billable</span>
+      {{else}}<span class="muted">Non-billable</span>{{end}}
+    </td>
+    <td>
+      {{if .Project.IsArchived}}<span class="badge badge-archived">Archived</span>
+      {{else}}<span class="muted">Active</span>{{end}}
+    </td>
+    <td class="row" style="justify-content:flex-end">
+      <button type="button" class="btn btn-ghost" hx-get="/projects/{{.Project.ID}}/edit" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML">Edit</button>
+      {{if .Project.IsArchived}}
+        <form hx-post="/projects/{{.Project.ID}}/unarchive" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML" style="margin:0">
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+          <button type="submit" class="btn btn-ghost">Unarchive</button>
+        </form>
+      {{else}}
+        <form hx-post="/projects/{{.Project.ID}}/archive" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML" style="margin:0">
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+          <button type="submit" class="btn btn-ghost">Archive</button>
+        </form>
+      {{end}}
+    </td>
+  {{end}}
+</tr>
+{{end}}

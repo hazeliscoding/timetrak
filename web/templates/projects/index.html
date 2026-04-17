@@ -1,0 +1,86 @@
+{{define "title"}}Projects · TimeTrak{{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <div class="row-between">
+    <h1>Projects</h1>
+    <form method="get" action="/projects" class="row">
+      <label class="sr-only" for="filter-client">Filter by client</label>
+      <select id="filter-client" name="client_id" onchange="this.form.submit()">
+        <option value="">All clients</option>
+        {{range .ActiveClients}}
+          <option value="{{.ID}}" {{if eq (printf "%s" .ID) $.FilterClientID}}selected{{end}}>{{.Name}}</option>
+        {{end}}
+      </select>
+      <label for="p-archived-toggle" class="muted">
+        <input id="p-archived-toggle" type="checkbox" name="archived" value="1"
+               onchange="this.form.submit()" {{if .IncludeArchived}}checked{{end}}>
+        Include archived
+      </label>
+    </form>
+  </div>
+
+  {{if .ActiveClients}}
+    <form method="post" action="/projects" class="card">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <h2 class="mt-0">New project</h2>
+      {{if .NewForm.Error}}
+        <div class="flash flash-error" role="alert" aria-live="assertive">{{.NewForm.Error}}</div>
+      {{end}}
+      <div class="row">
+        <div class="field" style="flex:1;min-width:180px;margin-bottom:0">
+          <label for="new-client">Client</label>
+          <select id="new-client" name="client_id" required>
+            <option value="">Select…</option>
+            {{range .ActiveClients}}
+              <option value="{{.ID}}" {{if eq (printf "%s" .ID) $.NewForm.ClientID}}selected{{end}}>{{.Name}}</option>
+            {{end}}
+          </select>
+        </div>
+        <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
+          <label for="new-pname">Project name</label>
+          <input id="new-pname" name="name" type="text" required value="{{.NewForm.Name}}">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="new-pcode">Code</label>
+          <input id="new-pcode" name="code" type="text" value="{{.NewForm.Code}}" style="width:7rem">
+        </div>
+        <label class="row" style="gap:.25rem;margin:0">
+          <input type="checkbox" name="default_billable" {{if .NewForm.DefaultBillable}}checked{{end}}>
+          Default billable
+        </label>
+        <button class="btn btn-primary" type="submit">Add project</button>
+      </div>
+    </form>
+  {{else}}
+    <div class="empty card">
+      <h2>Add a client first</h2>
+      <p class="muted">Projects live under clients. <a href="/clients">Create a client</a> to start tracking projects.</p>
+    </div>
+  {{end}}
+
+  {{if not .Projects}}
+    <div class="empty card">
+      <h2>No projects yet</h2>
+      <p class="muted">Create your first project above.</p>
+    </div>
+  {{else}}
+  <table class="table" aria-label="Projects">
+    <caption class="sr-only">Projects in this workspace</caption>
+    <thead>
+      <tr>
+        <th scope="col">Project</th>
+        <th scope="col">Client</th>
+        <th scope="col">Code</th>
+        <th scope="col">Billable</th>
+        <th scope="col">Status</th>
+        <th scope="col"><span class="sr-only">Actions</span></th>
+      </tr>
+    </thead>
+    <tbody id="projects-tbody" aria-live="polite">
+      {{range .Projects}}{{template "project_row" (dict "CSRFToken" $.CSRFToken "Project" .)}}{{end}}
+    </tbody>
+  </table>
+  {{end}}
+</section>
+{{end}}

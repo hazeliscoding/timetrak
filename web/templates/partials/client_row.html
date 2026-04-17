@@ -1,0 +1,47 @@
+{{define "client_row"}}
+<tr id="client-{{.Client.ID}}">
+  {{if .Edit}}
+    <td colspan="5">
+      <form hx-patch="/clients/{{.Client.ID}}" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML" class="row">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <div class="field" style="flex:1;margin-bottom:0">
+          <label class="sr-only" for="edit-name-{{.Client.ID}}">Name</label>
+          <input id="edit-name-{{.Client.ID}}" name="name" type="text" value="{{.Client.Name}}" required autofocus data-focus-after-swap>
+        </div>
+        <div class="field" style="flex:1;margin-bottom:0">
+          <label class="sr-only" for="edit-email-{{.Client.ID}}">Contact email</label>
+          <input id="edit-email-{{.Client.ID}}" name="contact_email" type="email" value="{{.Client.ContactEmail}}">
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" class="btn" hx-get="/clients/{{.Client.ID}}/row" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML">Cancel</button>
+        {{if .Error}}<span class="error" role="alert">{{.Error}}</span>{{end}}
+      </form>
+    </td>
+  {{else}}
+    <td><strong>{{.Client.Name}}</strong></td>
+    <td>{{if .Client.ContactEmail}}{{.Client.ContactEmail}}{{else}}<span class="muted">—</span>{{end}}</td>
+    <td class="num">{{.Client.ProjectCount}}</td>
+    <td>
+      {{if .Client.IsArchived}}
+        <span class="badge badge-archived" aria-label="Archived">Archived</span>
+      {{else}}
+        <span class="muted">Active</span>
+      {{end}}
+    </td>
+    <td class="row" style="justify-content:flex-end">
+      <button type="button" class="btn btn-ghost" hx-get="/clients/{{.Client.ID}}/edit" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML">Edit</button>
+      {{if .Client.IsArchived}}
+        <form hx-post="/clients/{{.Client.ID}}/unarchive" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML" style="margin:0">
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+          <button type="submit" class="btn btn-ghost">Unarchive</button>
+        </form>
+      {{else}}
+        <form hx-post="/clients/{{.Client.ID}}/archive" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML" style="margin:0">
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+          <button type="submit" class="btn btn-ghost">Archive</button>
+        </form>
+      {{end}}
+    </td>
+  {{end}}
+</tr>
+{{end}}

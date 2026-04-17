@@ -1,0 +1,19 @@
+{{define "confirm_dialog"}}
+<dialog id="{{.ID}}" aria-labelledby="{{.ID}}-title">
+  <form method="dialog">
+    <h2 id="{{.ID}}-title">{{.Title}}</h2>
+    <p>{{.Message}}</p>
+    <div class="row" style="justify-content: flex-end;">
+      <button type="button" class="btn" value="cancel" onclick="this.closest('dialog').close('cancel')">Cancel</button>
+      <button type="submit"
+              class="btn btn-danger"
+              hx-{{.Method}}="{{.Action}}"
+              hx-target="{{.Target}}"
+              hx-swap="{{.Swap}}"
+              data-focus-after-swap>
+        {{.ConfirmLabel}}
+      </button>
+    </div>
+  </form>
+</dialog>
+{{end}}

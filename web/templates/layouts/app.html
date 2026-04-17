@@ -1,0 +1,51 @@
+{{define "app-shell"}}
+<div class="app-shell">
+  <header class="app-header" role="banner">
+    <strong>TimeTrak</strong>
+    {{template "header_workspace_switcher" .}}
+    <span style="flex:1"></span>
+    <span aria-live="polite" id="global-status" class="muted"></span>
+    <nav aria-label="Theme">
+      <button type="button" class="btn btn-ghost" data-theme-set="light" aria-label="Light theme">Light</button>
+      <button type="button" class="btn btn-ghost" data-theme-set="dark" aria-label="Dark theme">Dark</button>
+      <button type="button" class="btn btn-ghost" data-theme-set="system" aria-label="Use system theme">System</button>
+    </nav>
+    {{if .CurrentUser}}
+      <form method="post" action="/logout" style="margin:0">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <button class="btn btn-ghost" type="submit">Sign out</button>
+      </form>
+    {{end}}
+  </header>
+  <aside class="app-sidebar" aria-label="Primary">
+    <nav class="nav">
+      <a href="/dashboard" {{if eq .ActivePage "dashboard"}}aria-current="page"{{end}}>Dashboard</a>
+      <a href="/time" {{if eq .ActivePage "time"}}aria-current="page"{{end}}>Time</a>
+      <a href="/clients" {{if eq .ActivePage "clients"}}aria-current="page"{{end}}>Clients</a>
+      <a href="/projects" {{if eq .ActivePage "projects"}}aria-current="page"{{end}}>Projects</a>
+      <a href="/reports" {{if eq .ActivePage "reports"}}aria-current="page"{{end}}>Reports</a>
+      <a href="/rates" {{if eq .ActivePage "rates"}}aria-current="page"{{end}}>Rates</a>
+    </nav>
+  </aside>
+  <main id="main" class="app-main" role="main">
+    {{template "flash" .Flash}}
+    {{block "content" .}}{{end}}
+  </main>
+</div>
+{{end}}
+
+{{define "header_workspace_switcher"}}
+  {{if gt (len .Workspaces) 1}}
+    <form method="post" action="/workspace/switch" hx-post="/workspace/switch" hx-target="#main" hx-swap="outerHTML" style="margin:0">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+      <label class="sr-only" for="ws-switch">Active workspace</label>
+      <select id="ws-switch" name="workspace_id" onchange="this.form.requestSubmit()">
+        {{range .Workspaces}}
+          <option value="{{.ID}}" {{if eq .ID $.ActiveWorkspaceID}}selected{{end}}>{{.Name}}</option>
+        {{end}}
+      </select>
+    </form>
+  {{else if .ActiveWorkspaceName}}
+    <span class="muted">Workspace: {{.ActiveWorkspaceName}}</span>
+  {{end}}
+{{end}}
