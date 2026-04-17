@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: timetrak-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-timetrak}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-timetrak}
+      POSTGRES_DB: ${POSTGRES_DB:-timetrak}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - timetrak-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-timetrak} -d ${POSTGRES_DB:-timetrak}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  timetrak-pg-data:
