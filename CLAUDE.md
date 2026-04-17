@@ -71,4 +71,51 @@ Target **WCAG 2.2 AA**. Visible labels, visible keyboard focus, sufficient contr
 
 ## Build / Test Commands
 
-None yet — the Go project has not been scaffolded. When adding the first Go code (as part of the MVP bootstrap change), add the build/test/lint commands to this file.
+Standard development loop is driven by `Makefile`; a running PostgreSQL (via `make db-up`) and a populated `.env` (copy `.env.example`) are prerequisites.
+
+- `make db-up` / `make db-down` — start/stop the local Postgres via `docker-compose.yml`
+- `make run` — run the web server (`go run ./cmd/web`)
+- `make build` — produce `bin/web` and `bin/migrate`
+- `make migrate-up` / `make migrate-down` / `make migrate-redo` — apply / roll back / re-apply the most recent migration
+- `make dev-seed` — seed a demo user, workspace, client, project, rate, and historical entries
+- `make test` — `go test ./...`
+- `make lint` / `make vet` — `go vet ./...`
+- `make fmt` — `gofmt -w .`
+- `make tidy` — `go mod tidy`
+
+Required env vars (see `.env.example`): `DATABASE_URL`, `SESSION_SECRET` (≥32 bytes), `COOKIE_SECURE`, `APP_ENV`, `HTTP_ADDR`.
+
+## Implementation choices landed in the bootstrap change
+
+- **HTTP router**: stdlib `net/http` (Go 1.22+ method+path patterns like `GET /static/`). No third-party router.
+- **Template engine**: stdlib `html/template`. Templates live under `web/templates/` and are loaded at startup by `internal/shared/templates` (layouts + partials auto-included with every page). Extra template funcs: `dict`, `seq`, `formatDate`, `formatTime`, `formatDuration`, `formatMinor`, `iso`, `add`, `sub`.
+- **DB driver**: `github.com/jackc/pgx/v5` (direct use; no ORM). Transactions use `pool.InTx` (internally `pgx.BeginFunc`) against a `pgxpool.Pool`.
+- **Password hashing**: Argon2id via `golang.org/x/crypto/argon2`. Parameters: `m=64 MiB`, `t=3`, `p=2`, 16-byte salt, 32-byte key. Minimum password length: 10.
+- **Migrations**: plain SQL under `migrations/` with a tiny in-repo runner at `cmd/migrate/` (`NNNN_name.up.sql` / `NNNN_name.down.sql`, tracked in a `schema_migrations` table). No `golang-migrate`/`goose` dependency. `go run ./cmd/migrate seed` hashes the demo password fresh (no pinned hash string in git).
+- **Pagination for entries list**: offset-based for MVP (deferred cursor upgrade). 25 rows per page.
+- **CSRF**: signed double-submit cookie (`tt_csrf`), validated on POST/PUT/PATCH/DELETE via form field `csrf_token` or header `X-CSRF-Token`.
+- **Sessions**: Postgres-backed (`sessions` table), cookie is `tt_session`, HMAC-signed session id, HttpOnly + SameSite=Lax; `Secure` controlled by `COOKIE_SECURE`.
+- **Rate limiter** (auth): in-memory per-IP token bucket, burst 10, refill 1 token/minute. Swap for a Redis-backed bucket when scaling out.
+- **HTMX peer-refresh events**: timer start/stop emit `HX-Trigger: timer-changed, entries-changed`; entry CRUD emits `entries-changed`; client/project CRUD emit their own `-changed` events. Dashboard summary refreshes via `hx-trigger="timer-changed from:body, entries-changed from:body"`.
+- **Focus after HTMX swap**: `data-focus-after-swap` on the target element; `web/static/js/app.js` focuses it on `htmx:afterSwap`. Destructive deletes use `hx-confirm` (native `confirm()`) for MVP; `partials/confirm_dialog.html` is available as an accessible `<dialog>` option for future flows where focus trapping matters.
+- **Rate resolution**: `rates.Service.Resolve(ctx, workspaceID, projectID, at)` is the single source of truth. Reporting and (future) invoicing MUST go through it.
+- **Money**: integer minor units everywhere. `DurationBillable(seconds, hourlyRateMinor) = (seconds * rate) / 3600` — no floats.
+- **Workspace authz**: every repository method takes `workspaceID` explicitly and includes it in the `WHERE` clause. Cross-workspace access returns HTTP 404, never 403.
+- **Active-timer invariant**: partial unique index `ux_time_entries_one_active_per_user_workspace` (on `(workspace_id, user_id) WHERE ended_at IS NULL`). Concurrent starts fail with SQLSTATE 23505 → handler returns HTTP 409 via `ErrActiveTimerExists`.
+- **Integration tests**: `internal/shared/testdb.Open(t)` opens the pool from `$DATABASE_URL` and truncates domain tables; tests are skipped gracefully when the env var is absent. Because all integration-test packages share one Postgres, `make test` runs `go test -p 1 ./...` so the truncate steps don't race.
+
+## Repository layout
+
+```
+cmd/
+  web/      HTTP server
+  migrate/  Migration runner + dev-seed
+  worker/   Placeholder for background jobs
+internal/
+  shared/   Cross-cutting: db, clock, money, http (middleware/HTMX), session, csrf, authz, templates, logging
+  auth/ workspace/ clients/ projects/ tracking/ rates/ reporting/   (per-domain, land incrementally)
+web/
+  templates/{layouts,partials,...}   Server-rendered HTML + HTMX partials
+  static/{css,js,vendor}             Tokens, app.js (theme toggle + HTMX focus helper), vendored HTMX
+migrations/ 0001_*.up.sql / 0001_*.down.sql ...
+```
