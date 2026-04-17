@@ -1235,3 +1235,40 @@ These do not block the design, but they are good next decisions:
 4. Should reports calculate rate values live, or snapshot them during billing?
 5. Should invoice generation become its own module after MVP?
 
+
+---
+
+## 35. Authorization (Stage 2 hardening)
+
+Workspace is the sole authorization boundary. The following invariants are
+contract, enforced by code rather than convention:
+
+- **Typed request context**: every domain handler receives a
+  `authz.WorkspaceContext{UserID, WorkspaceID, Role}` populated by the
+  `RequireWorkspace` middleware. Handlers obtain it via
+  `authz.MustFromContext(ctx)`. Reading `workspace_id` from form, query,
+  path, or body input for authorization purposes is forbidden and
+  enforced by a `go test` lint at
+  `internal/shared/authz/handler_input_lint_test.go`.
+- **Repository audit**: every public function whose signature accepts
+  `workspaceID uuid.UUID` MUST issue SQL constrained by `workspace_id`.
+  This is the canonical workspace-scope enforcement check, implemented as
+  `internal/shared/authz/repo_audit_test.go`. Confirmed-safe exceptions
+  (e.g. a same-transaction lookup that already verified scope) declare
+  themselves with an inline `// authz:ok: <reason>` comment within five
+  lines preceding the SQL literal.
+- **Cross-workspace 404 contract**: cross-workspace access (and any "row
+  not found" 404) is rendered through the shared
+  `web/templates/errors/not_found.html` template via
+  `sharedhttp.NotFound`. The body is byte-identical regardless of which
+  resource was requested, preventing information disclosure via response
+  differences.
+- **Database-level project/client consistency**: migration 0012 adds a
+  composite foreign key `projects (client_id, workspace_id) REFERENCES
+  clients (id, workspace_id)` so service-layer bugs cannot produce
+  inconsistent rows.
+- **Per-domain authz integration tests**: each covered domain ships an
+  `authz_test.go` that exercises every registered route as a non-member
+  user, asserting HTTP 404 with no information disclosure. A
+  route-coverage test in `internal/shared/http/route_coverage_test.go`
+  fails the build if a new route is added without a corresponding test.

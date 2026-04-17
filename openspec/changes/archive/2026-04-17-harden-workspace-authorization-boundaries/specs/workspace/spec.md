@@ -1,25 +1,4 @@
-# workspace Specification
-
-## Purpose
-Workspace is the sole authorization boundary in TimeTrak. Every domain
-entity (clients, projects, tasks, time entries, rate rules, reporting
-aggregates) is owned by exactly one workspace, and every read or write
-operation MUST verify the caller is a member of that workspace. Cross-
-workspace access returns HTTP 404 with no information disclosure. The
-authorization contract is upheld by typed request context, repository-
-level WHERE-clause discipline (audited by `go test`), exhaustive per-
-handler cross-workspace denial tests, and database-level invariants where
-service code alone is insufficient.
-## Requirements
-### Requirement: Default personal workspace on signup
-
-The system SHALL automatically create a default personal workspace for each new user during registration and add that user as the workspace `owner` in the same transaction as user creation.
-
-#### Scenario: First workspace created on signup
-- **GIVEN** a user completes signup
-- **THEN** exactly one `workspaces` row is created for that user
-- **AND** a `workspace_members` row exists with role `owner`
-- **AND** the session's active workspace is set to that workspace
+## MODIFIED Requirements
 
 ### Requirement: Workspace is the authorization boundary
 
@@ -48,6 +27,8 @@ All domain data (clients, projects, tasks, time entries, rate rules, reports) MU
 - **WHEN** any mutating or reading handler in any of these families receives a request referencing a resource in a workspace the caller is not a member of
 - **THEN** the response status MUST be 404 regardless of family or verb
 - **AND** the outcome MUST be identical to the outcome for a resource whose identifier does not exist at all
+
+## ADDED Requirements
 
 ### Requirement: Handlers MUST receive the active workspace via a typed request context
 
@@ -101,38 +82,3 @@ The test suite MUST include, for every registered HTTP route in the `clients`, `
 - **WHEN** the integration suite runs
 - **THEN** every row MUST receive HTTP 404 when invoked across workspaces
 - **AND** every response body MUST match the shared not-found template exactly
-
-### Requirement: Workspace membership roles
-
-The system SHALL support at least three membership roles: `owner`, `admin`, `member`. The creator of a workspace MUST be its `owner`. For MVP, all three roles grant full read/write access to workspace data; role distinctions are reserved for later changes (team invitations, approvals).
-
-#### Scenario: Owner role assigned on creation
-- **WHEN** a workspace is created
-- **THEN** the creating user's `workspace_members.role` is `owner`
-
-### Requirement: Active workspace switching
-
-A user who is a member of more than one workspace SHALL be able to switch the active workspace. The switch MUST persist for the duration of the session. When the user has only one workspace, the switcher control MAY be hidden to reduce visual noise, but the session MUST still record an active workspace.
-
-#### Scenario: User with multiple memberships switches workspace
-- **GIVEN** Alice is a member of `W1` and `W2`, with `W1` active
-- **WHEN** Alice selects `W2` from the workspace switcher
-- **THEN** the session's `active_workspace_id` is updated to `W2`
-- **AND** subsequent pages show data scoped to `W2`
-
-#### Scenario: Solo-workspace user has workspace set
-- **GIVEN** Alice is a member of exactly one workspace `W1`
-- **WHEN** Alice logs in
-- **THEN** the session's `active_workspace_id` equals `W1`
-- **AND** the workspace switcher control MAY be hidden
-
-### Requirement: Workspace switcher UI accessibility
-
-When the workspace switcher is rendered, it MUST be a native `<select>` or an equivalent ARIA-conformant listbox, MUST have a visible label, MUST be keyboard operable, and MUST convey the currently active workspace by text (not color alone).
-
-#### Scenario: Keyboard switch
-- **GIVEN** Alice has the switcher focused
-- **WHEN** she opens it with the keyboard and selects a workspace
-- **THEN** the selection is applied without requiring a pointer
-- **AND** the active workspace text is announced by assistive technology
-
