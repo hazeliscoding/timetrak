@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS ux_time_entries_one_active_per_user_workspace;

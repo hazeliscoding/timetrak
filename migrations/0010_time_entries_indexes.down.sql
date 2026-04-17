@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS ix_time_entries_workspace_project_started_desc;
+DROP INDEX IF EXISTS ix_time_entries_workspace_started_desc;
