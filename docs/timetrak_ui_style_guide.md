@@ -1,4 +1,18 @@
-# TimeTrak MVP UI Style Guide
+# TimeTrak UI Style Guide
+
+## Status
+
+This guide covers UI direction for all active and planned work on TimeTrak.
+The MVP has shipped. We are now in **Stage 2 — Stabilize**, working toward a polished, accessible, and component-driven product.
+
+Stage 2 UI priorities in order:
+1. `polish-mvp-ui-for-accessibility-and-consistency` — close rough edges, align with this guide
+2. `create-reusable-ui-partials-and-patterns` — reduce markup duplication, standardize layout patterns
+3. `establish-custom-component-library-foundation` — define design tokens, base components, and product-specific widgets
+4. `create-component-library-showcase-and-usage-docs` — internal showcase + usage docs
+5. `refine-timetrak-brand-and-product-visual-language` — stronger identity, visual taste
+
+---
 
 ## Product Feel
 
@@ -30,7 +44,7 @@ The product should look closer to:
 
 ### 1. Data-first
 TimeTrak is about time, money, projects, and clients.
-Design around those objects, not abstract “insights.”
+Design around those objects, not abstract "insights."
 
 ### 2. Clear hierarchy
 Every screen should make the primary action obvious:
@@ -47,6 +61,7 @@ Consistency makes the app feel designed.
 
 ### 4. Accessible by default
 Prefer semantic HTML, clear focus states, strong contrast, visible labels, and keyboard-friendly flows.
+WCAG 2.2 AA is the enforced baseline, not an aspiration.
 
 ### 5. Calm visual tone
 Use restrained surfaces, borders, and typography instead of heavy shadows and visual noise.
@@ -94,7 +109,7 @@ Each page should generally follow:
 4. primary content
 5. secondary content only if it helps the task
 
-### Recommended MVP Pages
+### Pages
 - Dashboard
 - Time Entries / Timesheet
 - Clients
@@ -133,7 +148,7 @@ Examples:
 
 Use one accent color and a restrained neutral scale.
 
-### Suggested Tokens
+### Design Tokens
 ```css
 :root {
   --bg: #f6f7f9;
@@ -275,7 +290,7 @@ They should feel first-class, not like an afterthought.
 - time entries
 - project/client summaries
 - reports
-- invoice-prep views later
+- invoice-prep views
 
 ### Table Rules
 - strong header row
@@ -411,9 +426,9 @@ Write like a real product, not a template.
 
 ---
 
-## Accessibility Baseline
+## Accessibility
 
-TimeTrak MVP should target WCAG 2.2 AA.
+TimeTrak targets WCAG 2.2 AA. This is enforced, not aspirational.
 
 ### Required habits
 - semantic HTML first
@@ -433,7 +448,7 @@ TimeTrak MVP should target WCAG 2.2 AA.
 }
 ```
 
-### Accessibility acceptance checks per screen
+### Acceptance checks per screen
 - Can complete the core flow with keyboard only
 - Focus is always visible
 - Form fields have labels
@@ -513,6 +528,30 @@ Show:
 Focus on readability over flash.
 Tables first.
 Charts only if they clearly add value.
+
+---
+
+## Component Library Direction (Stage 2+)
+
+The `establish-custom-component-library-foundation` change will formalize the following.
+Anticipate this when writing new templates — avoid bespoke markup that will be hard to migrate.
+
+### Planned scope
+- design tokens: color, spacing, radius, typography, borders, shadows, focus
+- base atoms: button, input, label, hint text, error text, badge, icon button
+- form primitives: field wrapper, select, textarea, checkbox, switch, segmented controls
+- table primitives: table shell, sortable header, empty state row, row actions
+- layout primitives: page header, action bar, sidebar section, card shell, filter bar
+- feedback primitives: toast/inline alert, empty state, loading shell, confirmation modal
+- product-specific components: timer card, time entry row, money summary card, project/client summary blocks
+
+### Visual goal
+The component library should feel:
+- calm
+- practical
+- data-first
+- slightly warm
+- distinct to TimeTrak — not a generic AI-SaaS template
 
 ---
 

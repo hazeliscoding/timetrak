@@ -4,13 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-TimeTrak is **pre-code**. No application source exists yet — the repo currently contains only planning material:
+TimeTrak is **post-MVP — Stage 2 (Stabilize)**. The MVP bootstrap change has been implemented and archived under `openspec/changes/archive/2026-04-17-bootstrap-timetrak-mvp/`. The application source exists; `openspec/specs/` is the accepted behavioral baseline.
 
-- `docs/` — narrative design and UI reference docs
-- `openspec/` — spec-driven change workflow (OpenSpec / OPSX)
-- `.claude/` — slash commands and skills for the OpenSpec workflow
+Active work follows the Stage 2 roadmap: hardening workspace authorization, timer integrity, rate resolution, reporting correctness, UI/accessibility polish, reusable UI partials, and component library foundation. See `docs/timetrak_post_mvp_openspec_roadmap.md` for the full roadmap and ordering.
 
-Treat this as Stage 0/Stage 1 of the flow described in `docs/openspec_flow_nothing_to_mvp_to_real_product.md`: the first real unit of work should be a single MVP bootstrap change under `openspec/changes/`, not speculative files in `openspec/specs/` or production code without a change backing it.
+New work must follow the one-change-per-unit rule: use `/opsx:propose <change-name>` to create a focused change before implementing. Never umbrella changes like `phase-2` or `misc-cleanup`.
 
 ## Stack (Target)
 
