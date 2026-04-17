@@ -12,6 +12,7 @@ import (
 	"timetrak/internal/clients"
 	"timetrak/internal/projects"
 	"timetrak/internal/shared/authz"
+	sharedhttp "timetrak/internal/shared/http"
 	"timetrak/internal/shared/templates"
 	"timetrak/internal/web/layout"
 )
@@ -39,21 +40,21 @@ func (h *Handler) Register(mux *http.ServeMux, protect func(http.Handler) http.H
 
 type listView struct {
 	layout.BaseView
-	Rules         []Rule
-	Clients       []clients.Client
-	Projects      []projects.Project
-	Form          formView
+	Rules    []Rule
+	Clients  []clients.Client
+	Projects []projects.Project
+	Form     formView
 }
 
 type formView struct {
-	Scope           string // "workspace" | "client" | "project"
-	ClientID        string
-	ProjectID       string
-	CurrencyCode    string
-	HourlyDecimal   string // user input, e.g. "125.50"
-	EffectiveFrom   string // yyyy-mm-dd
-	EffectiveTo     string // yyyy-mm-dd or ""
-	Error           string
+	Scope         string // "workspace" | "client" | "project"
+	ClientID      string
+	ProjectID     string
+	CurrencyCode  string
+	HourlyDecimal string // user input, e.g. "125.50"
+	EffectiveFrom string // yyyy-mm-dd
+	EffectiveTo   string // yyyy-mm-dd or ""
+	Error         string
 }
 
 func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +62,7 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) render(w http.ResponseWriter, r *http.Request, status int, form formView) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	rules, _ := h.svc.List(r.Context(), wsID)
 	cs, _ := h.clientsSvc.ListActive(r.Context(), wsID)
 	ps, _ := h.projectsSvc.ListActive(r.Context(), wsID)
@@ -76,7 +77,7 @@ func (h *Handler) render(w http.ResponseWriter, r *http.Request, status int, for
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	form := formView{
 		Scope:         strings.TrimSpace(r.FormValue("scope")),
 		ClientID:      r.FormValue("client_id"),
@@ -103,7 +104,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, ErrInvalidWindow):
 			form.Error = "End date must be on or after start date."
 		case errors.Is(err, ErrClientNotInWS), errors.Is(err, ErrProjectNotInWS):
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		default:
 			form.Error = "Could not save rate rule."
@@ -115,15 +116,15 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	if err := h.svc.Delete(r.Context(), wsID, id); err != nil {
 		if errors.Is(err, ErrNotFound) {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		http.Error(w, "delete failed", http.StatusInternalServerError)

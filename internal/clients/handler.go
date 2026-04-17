@@ -50,7 +50,7 @@ type newFormView struct {
 }
 
 func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	include := r.URL.Query().Get("archived") == "1"
 	items, err := h.svc.List(r.Context(), wsID, include)
 	if err != nil {
@@ -67,7 +67,7 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	name := r.FormValue("name")
 	email := r.FormValue("contact_email")
 	if _, err := h.svc.Create(r.Context(), wsID, name, email); err != nil {
@@ -89,7 +89,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) clientFromPath(r *http.Request) (uuid.UUID, uuid.UUID, bool) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
 		return uuid.Nil, uuid.Nil, false
@@ -107,12 +107,12 @@ type rowView struct {
 func (h *Handler) row(w http.ResponseWriter, r *http.Request) {
 	wsID, id, ok := h.clientFromPath(r)
 	if !ok {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	c, err := h.svc.Get(r.Context(), wsID, id)
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	_ = h.tpls.RenderPartial(w, http.StatusOK, "clients.index", "client_row", rowView{CSRFToken: csrf.Token(r), Client: c})
@@ -121,12 +121,12 @@ func (h *Handler) row(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) editRow(w http.ResponseWriter, r *http.Request) {
 	wsID, id, ok := h.clientFromPath(r)
 	if !ok {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	c, err := h.svc.Get(r.Context(), wsID, id)
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	_ = h.tpls.RenderPartial(w, http.StatusOK, "clients.index", "client_row", rowView{CSRFToken: csrf.Token(r), Client: c, Edit: true})
@@ -135,18 +135,18 @@ func (h *Handler) editRow(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) update(w http.ResponseWriter, r *http.Request) {
 	wsID, id, ok := h.clientFromPath(r)
 	if !ok {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	c, err := h.svc.Update(r.Context(), wsID, id, r.FormValue("name"), r.FormValue("contact_email"))
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		existing, gerr := h.svc.Get(r.Context(), wsID, id)
 		if gerr != nil {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		_ = h.tpls.RenderPartial(w, http.StatusUnprocessableEntity, "clients.index", "client_row", rowView{
@@ -165,13 +165,13 @@ func (h *Handler) unarchive(w http.ResponseWriter, r *http.Request) { h.toggleAr
 func (h *Handler) toggleArchive(w http.ResponseWriter, r *http.Request, archived bool) {
 	wsID, id, ok := h.clientFromPath(r)
 	if !ok {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	c, err := h.svc.SetArchived(r.Context(), wsID, id, archived)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		http.Error(w, "failed to archive", http.StatusInternalServerError)

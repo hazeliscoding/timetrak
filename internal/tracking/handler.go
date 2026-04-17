@@ -15,7 +15,6 @@ import (
 	"timetrak/internal/shared/authz"
 	"timetrak/internal/shared/csrf"
 	sharedhttp "timetrak/internal/shared/http"
-	"timetrak/internal/shared/session"
 	"timetrak/internal/shared/templates"
 	"timetrak/internal/web/layout"
 )
@@ -68,11 +67,10 @@ type timerView struct {
 }
 
 func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
-	running, _ := h.svc.GetRunning(r.Context(), wsID, sess.UserID)
-	ps, _ := h.projectsSvc.ListActive(r.Context(), wsID)
-	summary, _ := h.reportSvc.Dashboard(r.Context(), wsID, sess.UserID, time.Now())
+	wc := authz.MustFromContext(r.Context())
+	running, _ := h.svc.GetRunning(r.Context(), wc.WorkspaceID, wc.UserID)
+	ps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
+	summary, _ := h.reportSvc.Dashboard(r.Context(), wc.WorkspaceID, wc.UserID, time.Now())
 	base, _ := h.lay.Base(r, "dashboard")
 	_ = h.tpls.Render(w, http.StatusOK, "dashboard", dashboardView{
 		BaseView: base,
@@ -83,9 +81,8 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) dashboardSummary(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
-	summary, _ := h.reportSvc.Dashboard(r.Context(), wsID, sess.UserID, time.Now())
+	wc := authz.MustFromContext(r.Context())
+	summary, _ := h.reportSvc.Dashboard(r.Context(), wc.WorkspaceID, wc.UserID, time.Now())
 	_ = h.tpls.RenderPartial(w, http.StatusOK, "dashboard", "dashboard_summary", summary)
 }
 
@@ -94,32 +91,30 @@ func (h *Handler) timerWidget(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) renderTimer(w http.ResponseWriter, r *http.Request, status int, errMsg string) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
-	running, _ := h.svc.GetRunning(r.Context(), wsID, sess.UserID)
-	ps, _ := h.projectsSvc.ListActive(r.Context(), wsID)
+	wc := authz.MustFromContext(r.Context())
+	running, _ := h.svc.GetRunning(r.Context(), wc.WorkspaceID, wc.UserID)
+	ps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
 	_ = h.tpls.RenderPartial(w, status, "dashboard", "timer_widget", timerView{
 		CSRFToken: csrf.Token(r), Running: running, Projects: ps, Error: errMsg,
 	})
 }
 
 func (h *Handler) startTimer(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
+	wc := authz.MustFromContext(r.Context())
 	projectID, err := uuid.Parse(r.FormValue("project_id"))
 	if err != nil {
 		h.renderTimer(w, r, http.StatusUnprocessableEntity, "Choose a project to start the timer.")
 		return
 	}
 	in := StartInput{ProjectID: projectID, Description: r.FormValue("description")}
-	if _, err := h.svc.StartTimer(r.Context(), wsID, sess.UserID, in); err != nil {
+	if _, err := h.svc.StartTimer(r.Context(), wc.WorkspaceID, wc.UserID, in); err != nil {
 		switch {
 		case errors.Is(err, ErrActiveTimerExists):
 			h.renderTimer(w, r, http.StatusConflict, "A timer is already running. Stop it first.")
 		case errors.Is(err, ErrProjectArchived):
 			h.renderTimer(w, r, http.StatusUnprocessableEntity, "That project is archived.")
 		case errors.Is(err, ErrProjectNotFound):
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 		default:
 			h.renderTimer(w, r, http.StatusInternalServerError, "Could not start the timer.")
 		}
@@ -130,9 +125,8 @@ func (h *Handler) startTimer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) stopTimer(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
-	if _, err := h.svc.StopTimer(r.Context(), wsID, sess.UserID); err != nil {
+	wc := authz.MustFromContext(r.Context())
+	if _, err := h.svc.StopTimer(r.Context(), wc.WorkspaceID, wc.UserID); err != nil {
 		if errors.Is(err, ErrNoActiveTimer) {
 			h.renderTimer(w, r, http.StatusConflict, "No timer is running.")
 			return
@@ -148,16 +142,16 @@ func (h *Handler) stopTimer(w http.ResponseWriter, r *http.Request) {
 
 type entriesView struct {
 	layout.BaseView
-	Entries         []Entry
-	Total           int
-	Page            int
-	TotalPages      int
-	PrevQuery       string
-	NextQuery       string
-	ActiveClients   []clients.Client
-	ActiveProjects  []projects.Project
-	Filters         filterForm
-	ManualForm      manualFormView
+	Entries        []Entry
+	Total          int
+	Page           int
+	TotalPages     int
+	PrevQuery      string
+	NextQuery      string
+	ActiveClients  []clients.Client
+	ActiveProjects []projects.Project
+	Filters        filterForm
+	ManualForm     manualFormView
 }
 
 type filterForm struct {
@@ -183,8 +177,7 @@ func (h *Handler) entriesList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) renderEntries(w http.ResponseWriter, r *http.Request, form manualFormView) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
+	wc := authz.MustFromContext(r.Context())
 
 	q := r.URL.Query()
 	filt := filterForm{
@@ -194,7 +187,7 @@ func (h *Handler) renderEntries(w http.ResponseWriter, r *http.Request, form man
 		ProjectID: q.Get("project_id"),
 		Billable:  q.Get("billable"),
 	}
-	lf := ListFilters{UserID: sess.UserID, Page: atoi(q.Get("page")), PageSize: 25}
+	lf := ListFilters{UserID: wc.UserID, Page: atoi(q.Get("page")), PageSize: 25}
 	if filt.From != "" {
 		if t, err := time.Parse("2006-01-02", filt.From); err == nil {
 			lf.From = &t
@@ -224,13 +217,13 @@ func (h *Handler) renderEntries(w http.ResponseWriter, r *http.Request, form man
 		lf.Billable = &f
 	}
 
-	res, err := h.svc.List(r.Context(), wsID, lf)
+	res, err := h.svc.List(r.Context(), wc.WorkspaceID, lf)
 	if err != nil {
 		http.Error(w, "list failed", http.StatusInternalServerError)
 		return
 	}
-	acs, _ := h.clientsSvc.ListActive(r.Context(), wsID)
-	aps, _ := h.projectsSvc.ListActive(r.Context(), wsID)
+	acs, _ := h.clientsSvc.ListActive(r.Context(), wc.WorkspaceID)
+	aps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
 	base, _ := h.lay.Base(r, "time")
 
 	baseQuery := url.Values{}
@@ -269,8 +262,7 @@ func (h *Handler) renderEntries(w http.ResponseWriter, r *http.Request, form man
 }
 
 func (h *Handler) createManual(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
+	wc := authz.MustFromContext(r.Context())
 	form := manualFormView{
 		Date:        r.FormValue("date"),
 		StartTime:   r.FormValue("start_time"),
@@ -285,14 +277,14 @@ func (h *Handler) createManual(w http.ResponseWriter, r *http.Request) {
 		h.renderEntries(w, r, form)
 		return
 	}
-	if _, err := h.svc.CreateManual(r.Context(), wsID, sess.UserID, in); err != nil {
+	if _, err := h.svc.CreateManual(r.Context(), wc.WorkspaceID, wc.UserID, in); err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidRange):
 			form.Error = "End must be on or after start."
 		case errors.Is(err, ErrProjectArchived):
 			form.Error = "That project is archived."
 		case errors.Is(err, ErrProjectNotFound):
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		default:
 			form.Error = "Could not create entry."
@@ -312,44 +304,43 @@ type entryRowView struct {
 }
 
 func (h *Handler) entryRow(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wc := authz.MustFromContext(r.Context())
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
-	e, err := h.svc.Get(r.Context(), wsID, id)
+	e, err := h.svc.Get(r.Context(), wc.WorkspaceID, id)
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	_ = h.tpls.RenderPartial(w, http.StatusOK, "time.index", "entry_row", entryRowView{CSRFToken: csrf.Token(r), Entry: e})
 }
 
 func (h *Handler) editEntry(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wc := authz.MustFromContext(r.Context())
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
-	e, err := h.svc.Get(r.Context(), wsID, id)
+	e, err := h.svc.Get(r.Context(), wc.WorkspaceID, id)
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
-	ps, _ := h.projectsSvc.ListActive(r.Context(), wsID)
+	ps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
 	_ = h.tpls.RenderPartial(w, http.StatusOK, "time.index", "entry_row", entryRowView{
 		CSRFToken: csrf.Token(r), Entry: e, Edit: true, Projects: ps,
 	})
 }
 
 func (h *Handler) updateEntry(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
+	wc := authz.MustFromContext(r.Context())
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	projectID, err := uuid.Parse(r.FormValue("project_id"))
@@ -374,11 +365,11 @@ func (h *Handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 		EndedAt:     endedAt.UTC(),
 		IsBillable:  r.FormValue("is_billable") == "on",
 	}
-	e, err := h.svc.Edit(r.Context(), wsID, sess.UserID, id, in)
+	e, err := h.svc.Edit(r.Context(), wc.WorkspaceID, wc.UserID, id, in)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrEntryNotFound):
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 		case errors.Is(err, ErrActiveTimerExists):
 			http.Error(w, "conflict: edit would create a second running timer", http.StatusConflict)
 		case errors.Is(err, ErrInvalidRange):
@@ -393,16 +384,15 @@ func (h *Handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) deleteEntry(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
-	sess, _ := session.FromContext(r.Context())
+	wc := authz.MustFromContext(r.Context())
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
-	if err := h.svc.Delete(r.Context(), wsID, sess.UserID, id); err != nil {
+	if err := h.svc.Delete(r.Context(), wc.WorkspaceID, wc.UserID, id); err != nil {
 		if errors.Is(err, ErrEntryNotFound) {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		http.Error(w, "delete failed", http.StatusInternalServerError)

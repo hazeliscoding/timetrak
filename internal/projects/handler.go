@@ -16,10 +16,10 @@ import (
 
 // Handler serves the projects domain HTTP endpoints.
 type Handler struct {
-	svc      *Service
-	clients  *clients.Service
-	tpls     *templates.Registry
-	lay      *layout.Builder
+	svc     *Service
+	clients *clients.Service
+	tpls    *templates.Registry
+	lay     *layout.Builder
 }
 
 // NewHandler constructs the handler.
@@ -60,7 +60,7 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) renderList(w http.ResponseWriter, r *http.Request, status int, form newFormView, flash string) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	include := r.URL.Query().Get("archived") == "1"
 	clientFilter := r.URL.Query().Get("client_id")
 	var filterID uuid.UUID
@@ -90,7 +90,7 @@ func (h *Handler) renderList(w http.ResponseWriter, r *http.Request, status int,
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	clientID, err := uuid.Parse(r.FormValue("client_id"))
 	if err != nil {
 		h.renderList(w, r, http.StatusUnprocessableEntity, newFormView{
@@ -114,7 +114,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, ErrClientArchived):
 			msg = "Cannot create a project under an archived client."
 		case errors.Is(err, ErrClientMismatch):
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		h.renderList(w, r, http.StatusUnprocessableEntity, newFormView{
@@ -127,7 +127,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) projectFromPath(r *http.Request) (uuid.UUID, uuid.UUID, bool) {
-	wsID := authz.ActiveWorkspace(r.Context())
+	wsID := authz.MustFromContext(r.Context()).WorkspaceID
 	id, err := uuid.Parse(r.PathValue("id"))
 	if err != nil {
 		return uuid.Nil, uuid.Nil, false
@@ -145,12 +145,12 @@ type rowView struct {
 func (h *Handler) row(w http.ResponseWriter, r *http.Request) {
 	wsID, id, ok := h.projectFromPath(r)
 	if !ok {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	p, err := h.svc.Get(r.Context(), wsID, id)
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	_ = h.tpls.RenderPartial(w, http.StatusOK, "projects.index", "project_row", rowView{CSRFToken: csrf.Token(r), Project: p})
@@ -159,12 +159,12 @@ func (h *Handler) row(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) editRow(w http.ResponseWriter, r *http.Request) {
 	wsID, id, ok := h.projectFromPath(r)
 	if !ok {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	p, err := h.svc.Get(r.Context(), wsID, id)
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	_ = h.tpls.RenderPartial(w, http.StatusOK, "projects.index", "project_row", rowView{CSRFToken: csrf.Token(r), Project: p, Edit: true})
@@ -173,7 +173,7 @@ func (h *Handler) editRow(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) update(w http.ResponseWriter, r *http.Request) {
 	wsID, id, ok := h.projectFromPath(r)
 	if !ok {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	in := UpdateInput{
@@ -184,12 +184,12 @@ func (h *Handler) update(w http.ResponseWriter, r *http.Request) {
 	p, err := h.svc.Update(r.Context(), wsID, id, in)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		existing, gerr := h.svc.Get(r.Context(), wsID, id)
 		if gerr != nil {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		_ = h.tpls.RenderPartial(w, http.StatusUnprocessableEntity, "projects.index", "project_row", rowView{
@@ -208,13 +208,13 @@ func (h *Handler) unarchive(w http.ResponseWriter, r *http.Request) { h.toggleAr
 func (h *Handler) toggleArchive(w http.ResponseWriter, r *http.Request, archived bool) {
 	wsID, id, ok := h.projectFromPath(r)
 	if !ok {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	p, err := h.svc.SetArchived(r.Context(), wsID, id, archived)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		http.Error(w, "failed to archive", http.StatusInternalServerError)

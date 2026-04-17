@@ -18,9 +18,9 @@ import (
 )
 
 const (
-	cookieName  = "tt_session"
-	defaultTTL  = 30 * 24 * time.Hour
-	cookiePath  = "/"
+	cookieName = "tt_session"
+	defaultTTL = 30 * 24 * time.Hour
+	cookiePath = "/"
 )
 
 // ErrNotFound is returned when a session id is not present or expired.

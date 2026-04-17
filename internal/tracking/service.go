@@ -131,8 +131,8 @@ func (s *Service) StopTimer(ctx context.Context, workspaceID, userID uuid.UUID) 
 		if _, err := tx.Exec(ctx, `
 			UPDATE time_entries
 			SET ended_at = $2, duration_seconds = $3, updated_at = now()
-			WHERE id = $1
-		`, id, now, duration); err != nil {
+			WHERE id = $1 AND workspace_id = $4
+		`, id, now, duration, workspaceID); err != nil {
 			return err
 		}
 		entry, err = getEntryTx(ctx, tx, workspaceID, id)
@@ -268,14 +268,14 @@ func (s *Service) Delete(ctx context.Context, workspaceID, userID, entryID uuid.
 
 // ListFilters is the entries list query.
 type ListFilters struct {
-	From       *time.Time
-	To         *time.Time
-	ClientID   uuid.UUID
-	ProjectID  uuid.UUID
-	Billable   *bool
-	UserID     uuid.UUID // zero = all users in workspace (MVP: filter to current user at handler level)
-	Page       int
-	PageSize   int
+	From      *time.Time
+	To        *time.Time
+	ClientID  uuid.UUID
+	ProjectID uuid.UUID
+	Billable  *bool
+	UserID    uuid.UUID // zero = all users in workspace (MVP: filter to current user at handler level)
+	Page      int
+	PageSize  int
 }
 
 // ListResult packages paged entries.
@@ -322,6 +322,9 @@ func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, f ListFilters
 		where += fmt.Sprintf(" AND te.is_billable = $%d", len(args))
 	}
 	var total int
+	// authz:ok: where-clause is built dynamically above and always begins
+	// with `WHERE te.workspace_id = $1` (see top of List); the literal
+	// here is a fragment concatenated with that scoped predicate.
 	if err := s.pool.QueryRow(ctx, `
 		SELECT count(*) FROM time_entries te
 		JOIN projects p ON p.id = te.project_id

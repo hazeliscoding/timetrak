@@ -28,15 +28,15 @@ func NewService(pool *db.Pool, rs *rates.Service) *Service {
 
 // DashboardSummary is the at-a-glance card set.
 type DashboardSummary struct {
-	TodayTotalSeconds        int64
-	TodayBillableSeconds     int64
-	TodayNonBillableSeconds  int64
-	WeekTotalSeconds         int64
-	WeekBillableSeconds      int64
-	WeekNonBillableSeconds   int64
-	WeekEstimatedBillable    map[string]int64 // currency → minor units
-	EntriesWithoutRate       int
-	RunningTimer             bool
+	TodayTotalSeconds       int64
+	TodayBillableSeconds    int64
+	TodayNonBillableSeconds int64
+	WeekTotalSeconds        int64
+	WeekBillableSeconds     int64
+	WeekNonBillableSeconds  int64
+	WeekEstimatedBillable   map[string]int64 // currency → minor units
+	EntriesWithoutRate      int
+	RunningTimer            bool
 }
 
 // Dashboard computes today's and this-week's totals.
@@ -127,13 +127,13 @@ func (s *Service) estimateBillable(ctx context.Context, workspaceID, userID uuid
 
 // Report is the table view returned by Report.
 type Report struct {
-	Range        Range
-	ByDay        []Bucket
-	ByClient     []GroupedBucket
-	ByProject    []GroupedBucket
-	Totals       TotalsBlock
-	NoRateCount  int
-	Grouping     string
+	Range       Range
+	ByDay       []Bucket
+	ByClient    []GroupedBucket
+	ByProject   []GroupedBucket
+	Totals      TotalsBlock
+	NoRateCount int
+	Grouping    string
 }
 
 // Range is the inclusive date window.
@@ -144,29 +144,29 @@ type Range struct {
 
 // Bucket is a single day/week row.
 type Bucket struct {
-	Label             string
-	TotalSeconds      int64
-	BillableSeconds   int64
+	Label              string
+	TotalSeconds       int64
+	BillableSeconds    int64
 	NonBillableSeconds int64
 }
 
 // GroupedBucket aggregates per client or project with amount.
 type GroupedBucket struct {
-	ID                 uuid.UUID
-	Label              string
-	ClientLabel        string
-	Archived           bool
-	TotalSeconds       int64
-	BillableSeconds    int64
-	NonBillableSeconds int64
+	ID                  uuid.UUID
+	Label               string
+	ClientLabel         string
+	Archived            bool
+	TotalSeconds        int64
+	BillableSeconds     int64
+	NonBillableSeconds  int64
 	EstimatedByCurrency map[string]int64
 }
 
 // TotalsBlock is the grand total across the range.
 type TotalsBlock struct {
-	TotalSeconds       int64
-	BillableSeconds    int64
-	NonBillableSeconds int64
+	TotalSeconds        int64
+	BillableSeconds     int64
+	NonBillableSeconds  int64
 	EstimatedByCurrency map[string]int64
 }
 

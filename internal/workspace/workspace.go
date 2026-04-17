@@ -66,6 +66,9 @@ func (s *Service) Get(ctx context.Context, userID, workspaceID uuid.UUID) (Works
 		return Workspace{}, ErrForbidden
 	}
 	var w Workspace
+	// authz:ok: membership is verified above by s.authz.IsMember; querying
+	// the workspaces table by id alone is safe because non-members cannot
+	// reach this line.
 	err := s.pool.QueryRow(ctx, `SELECT id, name, slug FROM workspaces WHERE id = $1`, workspaceID).
 		Scan(&w.ID, &w.Name, &w.Slug)
 	if errors.Is(err, pgx.ErrNoRows) {

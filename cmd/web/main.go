@@ -104,6 +104,12 @@ func main() {
 	}
 
 	authzSvc := authz.NewService(pool.Pool)
+	// Wire the shared not-found renderer so authz middleware (and any
+	// domain handler that calls it) renders the same content-free 404
+	// page across "row not found" and "cross-workspace denial".
+	notFound := sharedhttp.NewNotFoundRenderer(tpls)
+	authz.SetNotFoundRenderer(notFound.Render)
+	sharedhttp.SetGlobalNotFound(notFound.Render)
 	sysClock := clock.System{}
 
 	// Domain services.
@@ -158,7 +164,7 @@ func main() {
 
 	// Protected domain routes: require session + active workspace membership.
 	protect := func(next http.Handler) http.Handler {
-		return authz.RequireAuth(authzSvc.RequireWorkspaceMember(next))
+		return authz.RequireAuth(authzSvc.RequireWorkspace(next))
 	}
 	clientsHandler.Register(mux, protect)
 	projectsHandler.Register(mux, protect)

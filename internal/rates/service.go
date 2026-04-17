@@ -50,13 +50,13 @@ type Resolution struct {
 
 // Errors.
 var (
-	ErrNotFound       = errors.New("rates: not found")
-	ErrInvalidWindow  = errors.New("rates: effective_to must be on or after effective_from")
-	ErrNegativeRate   = errors.New("rates: hourly rate must be zero or positive")
+	ErrNotFound        = errors.New("rates: not found")
+	ErrInvalidWindow   = errors.New("rates: effective_to must be on or after effective_from")
+	ErrNegativeRate    = errors.New("rates: hourly rate must be zero or positive")
 	ErrInvalidCurrency = errors.New("rates: currency must be a 3-letter code")
-	ErrOverlap        = errors.New("rates: window overlaps an existing rule at the same level")
-	ErrClientNotInWS  = errors.New("rates: client does not belong to the workspace")
-	ErrProjectNotInWS = errors.New("rates: project does not belong to the workspace")
+	ErrOverlap         = errors.New("rates: window overlaps an existing rule at the same level")
+	ErrClientNotInWS   = errors.New("rates: client does not belong to the workspace")
+	ErrProjectNotInWS  = errors.New("rates: project does not belong to the workspace")
 )
 
 // Service holds the rate use cases.

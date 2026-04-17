@@ -27,10 +27,10 @@ type Project struct {
 
 // Errors.
 var (
-	ErrNotFound        = errors.New("projects: not found")
-	ErrEmptyName       = errors.New("projects: name must not be empty")
-	ErrClientArchived  = errors.New("projects: cannot use an archived client as parent")
-	ErrClientMismatch  = errors.New("projects: client does not belong to the workspace")
+	ErrNotFound       = errors.New("projects: not found")
+	ErrEmptyName      = errors.New("projects: name must not be empty")
+	ErrClientArchived = errors.New("projects: cannot use an archived client as parent")
+	ErrClientMismatch = errors.New("projects: client does not belong to the workspace")
 )
 
 // Filters control the List call.

@@ -31,7 +31,24 @@ func (s *Store) Loader(next http.Handler) http.Handler {
 }
 
 // FromContext returns the session loaded by Loader, if any.
+//
+// SCOPE: this accessor is reserved for auth flows (login/logout/signup),
+// the workspace switcher, and the layout builder which needs to display
+// the current user's workspaces. Domain handlers (clients, projects,
+// tracking, rates, reporting) MUST NOT call FromContext for authorization
+// purposes; they read the verified WorkspaceContext from
+// authz.MustFromContext(ctx) instead. The forbid-list lint test in
+// internal/shared/authz enforces that handlers do not read workspace_id
+// from request input; this comment documents the analogous discipline for
+// session reads.
 func FromContext(ctx context.Context) (Session, bool) {
 	v, ok := ctx.Value(ctxKeySession).(Session)
 	return v, ok
+}
+
+// WithSession injects a session.Session into ctx in the same way Loader
+// would, so tests (and other middleware) can simulate an authenticated
+// request without round-tripping a cookie.
+func WithSession(ctx context.Context, s Session) context.Context {
+	return context.WithValue(ctx, ctxKeySession, s)
 }

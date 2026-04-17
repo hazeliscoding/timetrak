@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	sharedhttp "timetrak/internal/shared/http"
 	"timetrak/internal/shared/session"
 )
 
@@ -30,12 +31,12 @@ func (h *Handler) postSwitch(w http.ResponseWriter, r *http.Request) {
 	}
 	wsID, err := uuid.Parse(r.FormValue("workspace_id"))
 	if err != nil {
-		http.NotFound(w, r)
+		sharedhttp.NotFound(w, r)
 		return
 	}
 	if err := h.svc.SwitchActive(r.Context(), sess.ID, sess.UserID, wsID); err != nil {
 		if errors.Is(err, ErrForbidden) {
-			http.NotFound(w, r)
+			sharedhttp.NotFound(w, r)
 			return
 		}
 		http.Error(w, "failed to switch workspace", http.StatusInternalServerError)

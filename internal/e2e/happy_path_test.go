@@ -219,10 +219,10 @@ func TestHappyPathSignupToReport(t *testing.T) {
 	// Create a workspace-default rate.
 	todayStr := time.Now().UTC().Format("2006-01-02")
 	resp = c.post("/rates", url.Values{
-		"scope":           {"workspace"},
-		"currency_code":   {"USD"},
-		"hourly_decimal":  {"125.00"},
-		"effective_from":  {todayStr},
+		"scope":          {"workspace"},
+		"currency_code":  {"USD"},
+		"hourly_decimal": {"125.00"},
+		"effective_from": {todayStr},
 	})
 	if resp.StatusCode != http.StatusSeeOther {
 		t.Fatalf("create rate: %d body=%s", resp.StatusCode, body(t, resp))

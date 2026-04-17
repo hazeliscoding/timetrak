@@ -63,7 +63,26 @@ func RequireAuth(next http.Handler) http.Handler {
 
 // RequireWorkspaceMember verifies the session has an active workspace and the
 // user is a member of it. Cross-workspace access returns 404.
+//
+// On success, the request context is augmented with two values:
+//
+//  1. The legacy active-workspace UUID (via WithActiveWorkspace) for any
+//     handler still reading via authz.ActiveWorkspace during migration.
+//  2. The typed WorkspaceContext (via WithWorkspaceContext) which is the
+//     preferred accessor for Stage 2 handlers.
+//
+// Both are populated together so domain handlers can be migrated incrementally
+// without breaking siblings.
 func (s *Service) RequireWorkspaceMember(next http.Handler) http.Handler {
+	return s.RequireWorkspace(next)
+}
+
+// RequireWorkspace is the canonical middleware Stage 2 handlers should sit
+// behind. It resolves the active workspace from the session, verifies
+// membership (including the role) against workspace_members, and on success
+// populates the typed WorkspaceContext on the request. On any failure it
+// short-circuits with HTTP 404 via the shared not-found renderer.
+func (s *Service) RequireWorkspace(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sess, ok := session.FromContext(r.Context())
 		if !ok {
@@ -71,16 +90,62 @@ func (s *Service) RequireWorkspaceMember(next http.Handler) http.Handler {
 			return
 		}
 		if sess.ActiveWorkspaceID == nil {
-			http.NotFound(w, r)
+			s.renderNotFound(w, r)
 			return
 		}
-		if err := s.IsMember(r.Context(), sess.UserID, *sess.ActiveWorkspaceID); err != nil {
-			http.NotFound(w, r)
+		role, err := s.memberRole(r.Context(), sess.UserID, *sess.ActiveWorkspaceID)
+		if err != nil {
+			s.renderNotFound(w, r)
 			return
 		}
-		ctx := WithActiveWorkspace(r.Context(), *sess.ActiveWorkspaceID)
+		wc := WorkspaceContext{
+			UserID:      sess.UserID,
+			WorkspaceID: *sess.ActiveWorkspaceID,
+			Role:        role,
+		}
+		ctx := WithActiveWorkspace(r.Context(), wc.WorkspaceID)
+		ctx = WithWorkspaceContext(ctx, wc)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// memberRole returns the membership role for (user, workspace) or
+// ErrNotMember if no row exists. Result is plain text matching the
+// workspace_members.role check constraint.
+func (s *Service) memberRole(ctx context.Context, userID, workspaceID uuid.UUID) (string, error) {
+	var role string
+	err := s.pool.QueryRow(ctx, `
+		SELECT role FROM workspace_members
+		WHERE workspace_id = $1 AND user_id = $2
+	`, workspaceID, userID).Scan(&role)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", ErrNotMember
+	}
+	if err != nil {
+		return "", err
+	}
+	return role, nil
+}
+
+// notFoundRenderer is a function the application wires in at startup that
+// renders the shared not-found template. Defaulting to http.NotFound keeps
+// authz importable in tests and the migration runner where templates are
+// not loaded.
+var notFoundRenderer = func(w http.ResponseWriter, r *http.Request) {
+	http.NotFound(w, r)
+}
+
+// SetNotFoundRenderer wires the shared not-found renderer used by middleware
+// when access is denied. cmd/web calls this once at startup.
+func SetNotFoundRenderer(fn func(http.ResponseWriter, *http.Request)) {
+	if fn != nil {
+		notFoundRenderer = fn
+	}
+}
+
+// renderNotFound delegates to the wired renderer.
+func (s *Service) renderNotFound(w http.ResponseWriter, r *http.Request) {
+	notFoundRenderer(w, r)
 }
 
 // WithActiveWorkspace stashes the verified active workspace id on ctx.

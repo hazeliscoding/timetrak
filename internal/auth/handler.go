@@ -142,4 +142,3 @@ func (h *Handler) postLogout(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
-
