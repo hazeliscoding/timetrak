@@ -125,6 +125,24 @@ func (r *Registry) RenderPartial(w http.ResponseWriter, status int, page, partia
 	return err
 }
 
+// RenderPartialTo writes a single named partial to an io.Writer without
+// setting HTTP headers. Use this to compose multiple partials (e.g. the
+// main swap target plus one or more `hx-swap-oob` partials) into a single
+// HTTP response body.
+func (r *Registry) RenderPartialTo(w io.Writer, page, partial string, data any) error {
+	t, ok := r.pages[page]
+	if !ok {
+		for _, any := range r.pages {
+			t = any
+			break
+		}
+		if t == nil {
+			return fmt.Errorf("template: no templates loaded")
+		}
+	}
+	return t.ExecuteTemplate(w, partial, data)
+}
+
 // collect returns all .html files directly under a subdir.
 func collect(root fs.FS, dir string) ([]string, error) {
 	var files []string

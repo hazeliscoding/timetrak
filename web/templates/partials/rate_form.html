@@ -1,0 +1,60 @@
+{{define "rate_form"}}
+<form id="rate-form" {{if .OOB}}hx-swap-oob="true"{{end}}
+      method="post" action="/rates"
+      hx-post="/rates" hx-target="#rates-table" hx-swap="outerHTML"
+      class="card">
+  <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+  <h2 class="mt-0">New rate rule</h2>
+  {{if .Form.Error}}<div id="rate-form-error" class="flash flash-error" role="alert" aria-live="assertive">{{.Form.Error}}</div>{{end}}
+
+  <div class="row">
+    <div class="field" style="margin-bottom:0">
+      <label for="scope">Scope</label>
+      <select id="scope" name="scope" data-scope-select data-focus-after-swap
+              aria-describedby="{{if .Form.Error}}rate-form-error{{end}}">
+        <option value="workspace" {{if eq .Form.Scope "workspace"}}selected{{end}}>Workspace default</option>
+        <option value="client" {{if eq .Form.Scope "client"}}selected{{end}}>Per client</option>
+        <option value="project" {{if eq .Form.Scope "project"}}selected{{end}}>Per project</option>
+      </select>
+    </div>
+    <div class="field" id="scope-client" data-scope-target="client" style="margin-bottom:0" {{if ne .Form.Scope "client"}}hidden{{end}}>
+      <label for="rate-client">Client</label>
+      <select id="rate-client" name="client_id">
+        <option value="">Select…</option>
+        {{range .Clients}}<option value="{{.ID}}" {{if eq (printf "%s" .ID) $.Form.ClientID}}selected{{end}}>{{.Name}}</option>{{end}}
+      </select>
+    </div>
+    <div class="field" id="scope-project" data-scope-target="project" style="margin-bottom:0" {{if ne .Form.Scope "project"}}hidden{{end}}>
+      <label for="rate-project">Project</label>
+      <select id="rate-project" name="project_id">
+        <option value="">Select…</option>
+        {{range .Projects}}<option value="{{.ID}}" {{if eq (printf "%s" .ID) $.Form.ProjectID}}selected{{end}}>{{.ClientName}} — {{.Name}}</option>{{end}}
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label for="rate-currency">Currency</label>
+      <input id="rate-currency" name="currency_code" type="text" maxlength="3" required
+             value="{{if .Form.CurrencyCode}}{{.Form.CurrencyCode}}{{else}}USD{{end}}" style="width:5rem"
+             aria-describedby="{{if .Form.Error}}rate-form-error{{end}}">
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label for="rate-amount">Rate per hour</label>
+      <input id="rate-amount" name="hourly_decimal" type="text" inputmode="decimal" required
+             value="{{.Form.HourlyDecimal}}" placeholder="125.00"
+             aria-describedby="rate-amount-hint{{if .Form.Error}} rate-form-error{{end}}" style="width:7rem">
+      <span id="rate-amount-hint" class="hint">Enter as a decimal; stored as integer minor units.</span>
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label for="rate-from">Effective from</label>
+      <input id="rate-from" name="effective_from" type="date" required value="{{.Form.EffectiveFrom}}"
+             aria-describedby="{{if .Form.Error}}rate-form-error{{end}}">
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label for="rate-to">Effective to (optional)</label>
+      <input id="rate-to" name="effective_to" type="date" value="{{.Form.EffectiveTo}}"
+             aria-describedby="{{if .Form.Error}}rate-form-error{{end}}">
+    </div>
+    <div style="align-self:end"><button class="btn btn-primary" type="submit">Save rule</button></div>
+  </div>
+</form>
+{{end}}

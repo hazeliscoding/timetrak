@@ -1,0 +1,71 @@
+{{define "rate_row"}}
+<tr id="rate-{{.Rule.ID}}">
+  {{if .Edit}}
+    <td colspan="8">
+      <form hx-post="/rates/{{.Rule.ID}}" hx-target="#rate-{{.Rule.ID}}" hx-swap="outerHTML" class="row" style="flex-wrap:wrap;gap:.5rem;align-items:flex-end">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <input type="hidden" name="scope" value="{{if eq .Rule.Level "project"}}project{{else if eq .Rule.Level "client"}}client{{else}}workspace{{end}}">
+        {{if eq .Rule.Level "client"}}<input type="hidden" name="client_id" value="{{.Rule.ClientID}}">{{end}}
+        {{if eq .Rule.Level "project"}}<input type="hidden" name="project_id" value="{{.Rule.ProjectID}}">{{end}}
+        <input type="hidden" name="currency_code" value="{{.Rule.CurrencyCode}}">
+        <input type="hidden" name="hourly_decimal" value="{{formatMinor .Rule.HourlyRateMinor ""}}">
+        <input type="hidden" name="effective_from" value="{{formatDate .Rule.EffectiveFrom}}">
+        <div class="field" style="margin-bottom:0">
+          <label for="rate-to-{{.Rule.ID}}">Effective to</label>
+          <input id="rate-to-{{.Rule.ID}}" name="effective_to" type="date"
+                 value="{{if .AttemptedTo}}{{.AttemptedTo}}{{else if .Rule.EffectiveTo}}{{formatDate .Rule.EffectiveTo}}{{end}}"
+                 aria-describedby="rate-edit-note-{{.Rule.ID}}{{if .Error}} rate-edit-error-{{.Rule.ID}}{{end}}"
+                 {{if .Error}}aria-invalid="true"{{end}}
+                 data-focus-after-swap>
+          <span id="rate-edit-note-{{.Rule.ID}}" class="hint">Only the end date may be extended for this rule.</span>
+        </div>
+        <button type="submit" class="btn btn-primary">Save end date</button>
+        <button type="button" class="btn"
+                hx-get="/rates/{{.Rule.ID}}/row"
+                hx-target="#rate-{{.Rule.ID}}" hx-swap="outerHTML">Cancel</button>
+        {{if .Error}}
+          <span id="rate-edit-error-{{.Rule.ID}}" class="error" role="alert" aria-live="assertive">&#9888; {{.Error}}</span>
+        {{end}}
+      </form>
+    </td>
+  {{else}}
+    <td>{{.Rule.Level}}</td>
+    <td>
+      {{if eq .Rule.Level "project"}}{{.Rule.ProjectName}}
+      {{else if eq .Rule.Level "client"}}{{.Rule.ClientName}}
+      {{else}}<span class="muted">All projects &amp; clients</span>{{end}}
+    </td>
+    <td>{{.Rule.CurrencyCode}}</td>
+    <td class="num tabular">{{formatMinor .Rule.HourlyRateMinor .Rule.CurrencyCode}}</td>
+    <td>{{formatDate .Rule.EffectiveFrom}}</td>
+    <td>{{if .Rule.EffectiveTo}}{{formatDate .Rule.EffectiveTo}}{{else}}<span class="muted">Open-ended</span>{{end}}</td>
+    <td>
+      {{if gt .Rule.ReferencedByCount 0}}
+        <span id="rate-ref-{{.Rule.ID}}" class="hint">Referenced by {{.Rule.ReferencedByCount}} entr{{if eq .Rule.ReferencedByCount 1}}y{{else}}ies{{end}}</span>
+      {{else}}
+        <span class="muted">Unreferenced</span>
+      {{end}}
+    </td>
+    <td class="row" style="justify-content:flex-end;gap:.5rem">
+      {{if .Error}}
+        <span id="rate-row-error-{{.Rule.ID}}" class="error" role="alert" aria-live="assertive">&#9888; {{.Error}}</span>
+      {{end}}
+      <button type="button" class="btn btn-ghost"
+              hx-get="/rates/{{.Rule.ID}}/edit"
+              hx-target="#rate-{{.Rule.ID}}" hx-swap="outerHTML"
+              aria-describedby="{{if gt .Rule.ReferencedByCount 0}}rate-ref-{{.Rule.ID}}{{end}}"
+              data-focus-after-swap>Edit end date</button>
+      {{if gt .Rule.ReferencedByCount 0}}
+        <button class="btn btn-ghost btn-danger" type="button" disabled aria-describedby="rate-ref-{{.Rule.ID}}">Delete</button>
+      {{else}}
+        <form hx-post="/rates/{{.Rule.ID}}/delete"
+              hx-target="#rates-table" hx-swap="outerHTML"
+              hx-confirm="Delete this rate rule?" style="margin:0;display:inline">
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+          <button class="btn btn-ghost btn-danger" type="submit">Delete</button>
+        </form>
+      {{end}}
+    </td>
+  {{end}}
+</tr>
+{{end}}

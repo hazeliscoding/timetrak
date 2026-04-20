@@ -28,6 +28,30 @@
     }
   });
 
+  // Scope-toggle for the rate form: a [data-scope-select] shows/hides its
+  // sibling [data-scope-target] field groups by matching value. The no-JS
+  // fallback leaves all groups visible so the form still submits correctly.
+  function applyScopeToggle(select) {
+    const form = select.closest("form") || document;
+    const targets = form.querySelectorAll("[data-scope-target]");
+    targets.forEach(function (el) {
+      el.hidden = el.getAttribute("data-scope-target") !== select.value;
+    });
+  }
+  document.addEventListener("change", function (e) {
+    const select = e.target.closest("[data-scope-select]");
+    if (!select) return;
+    applyScopeToggle(select);
+  });
+  // Initialize on load and after any HTMX swap (the form may be re-rendered OOB).
+  function initScopeToggles(root) {
+    (root || document).querySelectorAll("[data-scope-select]").forEach(applyScopeToggle);
+  }
+  document.addEventListener("DOMContentLoaded", function () { initScopeToggles(); });
+  document.body.addEventListener("htmx:afterSwap", function (evt) {
+    initScopeToggles(evt.detail.target);
+  });
+
   // Timer elapsed updater: elements with [data-timer-started-at] tick once per second.
   function fmtElapsed(seconds) {
     const s = Math.max(0, Math.floor(seconds));

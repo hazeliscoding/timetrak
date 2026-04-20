@@ -1,0 +1,31 @@
+{{define "rates_table"}}
+<div id="rates-table">
+  {{if not .Rules}}
+    <div class="empty card">
+      <h2>No rate rules yet</h2>
+      <p class="muted">Create at least a workspace-default rule so billable entries can be valued.</p>
+    </div>
+  {{else}}
+    <table class="table" aria-label="Rate rules">
+      <caption class="sr-only">Rate rules in this workspace</caption>
+      <thead>
+        <tr>
+          <th scope="col">Level</th>
+          <th scope="col">Scope target</th>
+          <th scope="col">Currency</th>
+          <th scope="col" class="num">Hourly rate</th>
+          <th scope="col">Effective from</th>
+          <th scope="col">Effective to</th>
+          <th scope="col">Usage</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody id="rates-tbody">
+        {{range .Rules}}
+          {{template "rate_row" (dict "Rule" . "Edit" false "CSRFToken" $.CSRFToken)}}
+        {{end}}
+      </tbody>
+    </table>
+  {{end}}
+</div>
+{{end}}
