@@ -1,7 +1,24 @@
 package tracking
 
+// Taxonomy of tracking integrity errors (see internal/tracking/errors.go and
+// openspec/specs/tracking). Handlers MUST map these to HTTP status + stable
+// error codes as follows — do NOT invent new mappings here without an
+// accompanying change proposal:
+//
+//   ErrActiveTimerExists     -> 409  tracking.active_timer
+//   ErrNoActiveTimer         -> 409  tracking.no_active_timer
+//   ErrInvalidInterval       -> 422  tracking.invalid_interval
+//   ErrCrossWorkspaceProject -> 422  tracking.cross_workspace
+//   (unmapped)               -> 500  (logged at error, no error_kind)
+//
+// Every taxonomy response MUST be logged at warn with structured fields
+// `tracking.error_kind`, `workspace_id`, `user_id`, plus `entry_id`/`project_id`
+// when known. HX-Trigger events (`timer-changed`, `entries-changed`) are only
+// emitted on success.
+
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -27,11 +44,76 @@ type Handler struct {
 	reportSvc   *reporting.Service
 	tpls        *templates.Registry
 	lay         *layout.Builder
+	logger      *slog.Logger
 }
 
 // NewHandler constructs the handler.
 func NewHandler(svc *Service, ps *projects.Service, cs *clients.Service, reportSvc *reporting.Service, tpls *templates.Registry, lay *layout.Builder) *Handler {
-	return &Handler{svc: svc, projectsSvc: ps, clientsSvc: cs, reportSvc: reportSvc, tpls: tpls, lay: lay}
+	return &Handler{svc: svc, projectsSvc: ps, clientsSvc: cs, reportSvc: reportSvc, tpls: tpls, lay: lay, logger: slog.Default()}
+}
+
+// SetLogger overrides the structured logger. Used by tests to capture output.
+func (h *Handler) SetLogger(l *slog.Logger) { h.logger = l }
+
+// taxonomyResponse resolves a tracking error into its HTTP status, stable
+// error code, and human copy. Unknown errors return ("", 0, "") so callers
+// fall back to their default path (500 + generic copy, logged at error).
+func taxonomyResponse(err error) (code string, status int, message string) {
+	switch {
+	case errors.Is(err, ErrActiveTimerExists):
+		return ErrCodeActiveTimer, http.StatusConflict, "A timer is already running. Stop it first."
+	case errors.Is(err, ErrNoActiveTimer):
+		return ErrCodeNoActiveTimer, http.StatusConflict, "No timer is running."
+	case errors.Is(err, ErrInvalidInterval):
+		return ErrCodeInvalidInterval, http.StatusUnprocessableEntity, "End time must be after start time."
+	case errors.Is(err, ErrCrossWorkspaceProject):
+		return ErrCodeCrossWorkspace, http.StatusUnprocessableEntity, "That project is not in this workspace."
+	default:
+		return "", 0, ""
+	}
+}
+
+// logTaxonomy emits a warn line for known taxonomy errors with the structured
+// fields described in the handler taxonomy comment. attrs supplies optional
+// context (entry_id, project_id).
+func (h *Handler) logTaxonomy(r *http.Request, code string, attrs ...any) {
+	if h.logger == nil {
+		return
+	}
+	wc := authz.MustFromContext(r.Context())
+	base := []any{
+		"tracking.error_kind", code,
+		"workspace_id", wc.WorkspaceID.String(),
+		"user_id", wc.UserID.String(),
+	}
+	base = append(base, attrs...)
+	h.logger.LogAttrs(r.Context(), slog.LevelWarn, "tracking integrity failure", slogAttrs(base)...)
+}
+
+// logUnmapped emits an error line for a SQLSTATE that falls outside the
+// taxonomy (no tracking.error_kind field is set — dashboards key on its
+// absence to distinguish known vs unknown failures).
+func (h *Handler) logUnmapped(r *http.Request, err error, attrs ...any) {
+	if h.logger == nil {
+		return
+	}
+	wc := authz.MustFromContext(r.Context())
+	base := []any{
+		"workspace_id", wc.WorkspaceID.String(),
+		"user_id", wc.UserID.String(),
+		"err", err.Error(),
+	}
+	base = append(base, attrs...)
+	h.logger.LogAttrs(r.Context(), slog.LevelError, "tracking unmapped failure", slogAttrs(base)...)
+}
+
+func slogAttrs(kv []any) []slog.Attr {
+	out := make([]slog.Attr, 0, len(kv)/2)
+	for i := 0; i+1 < len(kv); i += 2 {
+		key, _ := kv[i].(string)
+		out = append(out, slog.Any(key, kv[i+1]))
+	}
+	return out
 }
 
 // Register wires routes behind the workspace-protect middleware.
@@ -63,7 +145,8 @@ type timerView struct {
 	CSRFToken string
 	Running   *Entry
 	Projects  []projects.Project
-	Error     string
+	Error     string // human copy, rendered if ErrorCode is empty
+	ErrorCode string // stable taxonomy code, e.g. "tracking.active_timer"
 }
 
 func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
@@ -87,15 +170,15 @@ func (h *Handler) dashboardSummary(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) timerWidget(w http.ResponseWriter, r *http.Request) {
-	h.renderTimer(w, r, http.StatusOK, "")
+	h.renderTimer(w, r, http.StatusOK, "", "")
 }
 
-func (h *Handler) renderTimer(w http.ResponseWriter, r *http.Request, status int, errMsg string) {
+func (h *Handler) renderTimer(w http.ResponseWriter, r *http.Request, status int, errCode, errMsg string) {
 	wc := authz.MustFromContext(r.Context())
 	running, _ := h.svc.GetRunning(r.Context(), wc.WorkspaceID, wc.UserID)
 	ps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
 	_ = h.tpls.RenderPartial(w, status, "dashboard", "timer_widget", timerView{
-		CSRFToken: csrf.Token(r), Running: running, Projects: ps, Error: errMsg,
+		CSRFToken: csrf.Token(r), Running: running, Projects: ps, Error: errMsg, ErrorCode: errCode,
 	})
 }
 
@@ -103,39 +186,49 @@ func (h *Handler) startTimer(w http.ResponseWriter, r *http.Request) {
 	wc := authz.MustFromContext(r.Context())
 	projectID, err := uuid.Parse(r.FormValue("project_id"))
 	if err != nil {
-		h.renderTimer(w, r, http.StatusUnprocessableEntity, "Choose a project to start the timer.")
+		h.renderTimer(w, r, http.StatusUnprocessableEntity, "", "Choose a project to start the timer.")
 		return
 	}
 	in := StartInput{ProjectID: projectID, Description: r.FormValue("description")}
 	if _, err := h.svc.StartTimer(r.Context(), wc.WorkspaceID, wc.UserID, in); err != nil {
-		switch {
-		case errors.Is(err, ErrActiveTimerExists):
-			h.renderTimer(w, r, http.StatusConflict, "A timer is already running. Stop it first.")
-		case errors.Is(err, ErrProjectArchived):
-			h.renderTimer(w, r, http.StatusUnprocessableEntity, "That project is archived.")
-		case errors.Is(err, ErrProjectNotFound):
+		if errors.Is(err, ErrProjectNotFound) {
+			// Cross-workspace denial runs first; composite FK is defense in
+			// depth, not the primary gate.
 			sharedhttp.NotFound(w, r)
-		default:
-			h.renderTimer(w, r, http.StatusInternalServerError, "Could not start the timer.")
+			return
 		}
+		if errors.Is(err, ErrProjectArchived) {
+			h.renderTimer(w, r, http.StatusUnprocessableEntity, "", "That project is archived.")
+			return
+		}
+		if code, status, msg := taxonomyResponse(err); code != "" {
+			h.logTaxonomy(r, code, "project_id", projectID.String())
+			h.renderTimer(w, r, status, code, msg)
+			return
+		}
+		h.logUnmapped(r, err, "project_id", projectID.String())
+		h.renderTimer(w, r, http.StatusInternalServerError, "", "Could not start the timer.")
 		return
 	}
 	sharedhttp.TriggerEvent(w, "timer-changed", "entries-changed")
-	h.renderTimer(w, r, http.StatusOK, "")
+	h.renderTimer(w, r, http.StatusOK, "", "")
 }
 
 func (h *Handler) stopTimer(w http.ResponseWriter, r *http.Request) {
 	wc := authz.MustFromContext(r.Context())
 	if _, err := h.svc.StopTimer(r.Context(), wc.WorkspaceID, wc.UserID); err != nil {
-		if errors.Is(err, ErrNoActiveTimer) {
-			h.renderTimer(w, r, http.StatusConflict, "No timer is running.")
+		if code, status, msg := taxonomyResponse(err); code != "" {
+			h.logTaxonomy(r, code)
+			h.renderTimer(w, r, status, code, msg)
 			return
 		}
-		h.renderTimer(w, r, http.StatusInternalServerError, "Could not stop the timer.")
+		h.logUnmapped(r, err)
+		h.renderTimer(w, r, http.StatusInternalServerError, "", "Could not stop the timer.")
 		return
 	}
+	_ = wc
 	sharedhttp.TriggerEvent(w, "timer-changed", "entries-changed")
-	h.renderTimer(w, r, http.StatusOK, "")
+	h.renderTimer(w, r, http.StatusOK, "", "")
 }
 
 // ---- Entries list ----
@@ -278,17 +371,23 @@ func (h *Handler) createManual(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if _, err := h.svc.CreateManual(r.Context(), wc.WorkspaceID, wc.UserID, in); err != nil {
-		switch {
-		case errors.Is(err, ErrInvalidRange):
-			form.Error = "End must be on or after start."
-		case errors.Is(err, ErrProjectArchived):
-			form.Error = "That project is archived."
-		case errors.Is(err, ErrProjectNotFound):
+		if errors.Is(err, ErrProjectNotFound) {
 			sharedhttp.NotFound(w, r)
 			return
-		default:
-			form.Error = "Could not create entry."
 		}
+		if errors.Is(err, ErrProjectArchived) {
+			form.Error = "That project is archived."
+			h.renderEntries(w, r, form)
+			return
+		}
+		if code, _, msg := taxonomyResponse(err); code != "" {
+			h.logTaxonomy(r, code, "project_id", in.ProjectID.String())
+			form.Error = msg
+			h.renderEntries(w, r, form)
+			return
+		}
+		h.logUnmapped(r, err, "project_id", in.ProjectID.String())
+		form.Error = "Could not create entry."
 		h.renderEntries(w, r, form)
 		return
 	}
@@ -300,6 +399,7 @@ type entryRowView struct {
 	Entry     Entry
 	Edit      bool
 	Error     string
+	ErrorCode string // stable taxonomy code for the shared tracking_error partial
 	Projects  []projects.Project
 }
 
@@ -367,16 +467,27 @@ func (h *Handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 	}
 	e, err := h.svc.Edit(r.Context(), wc.WorkspaceID, wc.UserID, id, in)
 	if err != nil {
-		switch {
-		case errors.Is(err, ErrEntryNotFound):
+		if errors.Is(err, ErrEntryNotFound) {
 			sharedhttp.NotFound(w, r)
-		case errors.Is(err, ErrActiveTimerExists):
-			http.Error(w, "conflict: edit would create a second running timer", http.StatusConflict)
-		case errors.Is(err, ErrInvalidRange):
-			http.Error(w, "end must be on or after start", http.StatusUnprocessableEntity)
-		default:
-			http.Error(w, "update failed", http.StatusInternalServerError)
+			return
 		}
+		// Re-fetch the existing entry so the edit form can re-render with
+		// the user's in-flight values preserved (project_id, timestamps).
+		// If Get fails, fall back to an empty entry.
+		existing, _ := h.svc.Get(r.Context(), wc.WorkspaceID, id)
+		if existing.ID == uuid.Nil {
+			existing = Entry{ID: id, WorkspaceID: wc.WorkspaceID, ProjectID: in.ProjectID, StartedAt: in.StartedAt, EndedAt: &in.EndedAt, IsBillable: in.IsBillable, Description: in.Description}
+		}
+		ps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
+		if code, status, msg := taxonomyResponse(err); code != "" {
+			h.logTaxonomy(r, code, "entry_id", id.String(), "project_id", in.ProjectID.String())
+			_ = h.tpls.RenderPartial(w, status, "time.index", "entry_row", entryRowView{
+				CSRFToken: csrf.Token(r), Entry: existing, Edit: true, Error: msg, ErrorCode: code, Projects: ps,
+			})
+			return
+		}
+		h.logUnmapped(r, err, "entry_id", id.String(), "project_id", in.ProjectID.String())
+		http.Error(w, "update failed", http.StatusInternalServerError)
 		return
 	}
 	sharedhttp.TriggerEvent(w, "entries-changed")

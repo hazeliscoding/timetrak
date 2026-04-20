@@ -61,8 +61,8 @@ func buildServer(t *testing.T) *httptest.Server {
 	clientsSvc := clients.NewService(pool)
 	projectsSvc := projects.NewService(pool)
 	ratesSvc := rates.NewService(pool)
-	reportingSvc := reporting.NewService(pool, ratesSvc)
-	trackingSvc := tracking.NewService(pool, clock.System{})
+	reportingSvc := reporting.NewService(pool)
+	trackingSvc := tracking.NewService(pool, clock.System{}, ratesSvc)
 
 	lay := layout.New(pool, wsSvc)
 	mux := http.NewServeMux()

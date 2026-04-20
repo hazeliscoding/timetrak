@@ -1,0 +1,22 @@
+{{define "tracking_error"}}
+{{/*
+  Shared inline error region for tracking integrity failures. Consumed by the
+  running-timer widget and the time-entry edit form. Input:
+    .ErrorCode  — stable taxonomy code (e.g. "tracking.active_timer")
+    .Message    — domain-specific copy for humans
+
+  Accessibility contract:
+    - aria-live="polite" on the outer region so screen readers announce swaps.
+    - Status conveyed via icon + text, never color alone (WCAG 2.2 AA, 1.4.1).
+    - data-tracking-error-code is machine-readable for tests and logs.
+*/}}
+{{if .ErrorCode}}
+<div class="flash flash-error tracking-error"
+     role="alert"
+     aria-live="polite"
+     data-tracking-error-code="{{.ErrorCode}}">
+  <span aria-hidden="true" class="tracking-error-icon">&#9888;</span>
+  <span class="tracking-error-text">{{.Message}}</span>
+</div>
+{{end}}
+{{end}}

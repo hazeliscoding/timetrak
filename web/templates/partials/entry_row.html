@@ -6,7 +6,7 @@
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="field" style="margin-bottom:0;min-width:180px;flex:1">
           <label for="edit-proj-{{.Entry.ID}}" class="sr-only">Project</label>
-          <select id="edit-proj-{{.Entry.ID}}" name="project_id" required autofocus data-focus-after-swap>
+          <select id="edit-proj-{{.Entry.ID}}" name="project_id" required {{if eq .ErrorCode "tracking.cross_workspace"}}data-focus-after-swap{{else if not .ErrorCode}}autofocus data-focus-after-swap{{end}}>
             {{range .Projects}}
               <option value="{{.ID}}" {{if eq .ID $.Entry.ProjectID}}selected{{end}}>{{.ClientName}} — {{.Name}}</option>
             {{end}}
@@ -22,7 +22,7 @@
         </div>
         <div class="field" style="margin-bottom:0">
           <label for="edit-end-{{.Entry.ID}}" class="sr-only">Ended at (UTC ISO8601)</label>
-          <input id="edit-end-{{.Entry.ID}}" name="ended_at" type="text" required value="{{if .Entry.EndedAt}}{{iso .Entry.EndedAt}}{{end}}" style="width:15rem">
+          <input id="edit-end-{{.Entry.ID}}" name="ended_at" type="text" required value="{{if .Entry.EndedAt}}{{iso .Entry.EndedAt}}{{end}}" style="width:15rem"{{if eq .ErrorCode "tracking.invalid_interval"}} data-focus-after-swap aria-invalid="true"{{end}}>
         </div>
         <label class="row" style="gap:.25rem;margin:0">
           <input type="checkbox" name="is_billable" {{if .Entry.IsBillable}}checked{{end}}>
@@ -30,7 +30,11 @@
         </label>
         <button class="btn btn-primary" type="submit">Save</button>
         <button type="button" class="btn" hx-get="/time-entries/{{.Entry.ID}}/row" hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML">Cancel</button>
-        {{if .Error}}<span class="error" role="alert">{{.Error}}</span>{{end}}
+        {{if .ErrorCode}}
+          {{template "tracking_error" (dict "ErrorCode" .ErrorCode "Message" .Error)}}
+        {{else if .Error}}
+          <span class="error" role="alert" aria-live="polite">&#9888; {{.Error}}</span>
+        {{end}}
       </form>
     </td>
   {{else}}

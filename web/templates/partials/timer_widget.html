@@ -30,9 +30,11 @@
       </div>
       <button class="btn btn-primary" type="submit" data-focus-after-swap>Start timer</button>
     </form>
-    {{if .Error}}
-      <div class="flash flash-error" role="alert" aria-live="assertive" style="margin:0 0 0 var(--space-4)">{{.Error}}</div>
-    {{end}}
+  {{end}}
+  {{if .ErrorCode}}
+    {{template "tracking_error" (dict "ErrorCode" .ErrorCode "Message" .Error)}}
+  {{else if .Error}}
+    <div class="flash flash-error" role="alert" aria-live="polite" style="margin:0 0 0 var(--space-4)">{{.Error}}</div>
   {{end}}
 </section>
 {{end}}
