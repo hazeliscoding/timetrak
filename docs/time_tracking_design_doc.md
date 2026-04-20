@@ -915,6 +915,48 @@ For MVP, reports can be generated directly from transactional tables using index
 - hours by project
 - billable value by date range
 
+### Timezone-aware bucketing (Stage 2)
+
+Each workspace carries a `reporting_timezone` column (IANA name,
+default `UTC`). Every aggregation buckets entries by
+`(te.started_at AT TIME ZONE w.reporting_timezone)::date` so the day a
+user sees in their timer matches the day reporting counts. Date-range
+filters (`from`, `to`) are interpreted as naive dates in the
+workspace's local tz. The query WHERE clause dual-bounds `started_at`:
+a raw envelope of `[from - 1 day, to + 2 days)` so the
+`(workspace_id, started_at)` index remains usable, plus the
+tz-converted predicate that narrows to the exact local date range.
+Preset ranges (This week / This month / etc.) are computed against
+the workspace's `*time.Location`, not UTC.
+
+### SQL-layer filter invariant
+
+Every aggregation query for a `Report` — `Totals`, `EstimatedByCurrency`,
+`NoRateCount`, and the selected grouping (`day` / `client` / `project`)
+— applies `client_id`, `project_id`, and `billable` as WHERE-clause
+predicates. Post-query filtering of the result set in Go is
+prohibited; `TotalsBlock`, `NoRateCount`, and each grouping's rows
+agree on the same filter set by construction. `billable` is tri-state
+(`""`, `"yes"`, `"no"`); `billable=no` short-circuits the estimated
+billable and no-rate queries.
+
+### HTMX partial endpoint
+
+`GET /reports/partial` returns only the `#report-results` fragment
+used by the filter form's HTMX swaps (`hx-get`, `hx-target`,
+`hx-push-url="true"`). Both `/reports` and `/reports/partial` share
+a single `parseFilters` helper, so their rendered slot is
+byte-identical for the same query string — the full page remains the
+deep-link and no-JS target.
+
+### Grand-total per-currency block
+
+When the selected range contains at least one closed billable entry
+with a non-NULL rate snapshot, the UI renders a grand-total block
+above the grouping table listing estimated billable once per
+`currency_code`, ordered ascending by ISO code. Amounts from
+different currencies are never summed.
+
 ### Later Scaling Option
 
 If reporting grows heavy, introduce:

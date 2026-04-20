@@ -59,7 +59,7 @@ func TestReportingCrossWorkspaceDenial(t *testing.T) {
 	authzSvc := authz.NewService(pool.Pool)
 	wsSvc := workspace.NewService(pool, authzSvc, nil)
 	lay := layout.New(pool, wsSvc)
-	h := reporting.NewHandler(reportSvc, clientsSvc, projectsSvc, tpls, lay)
+	h := reporting.NewHandler(reportSvc, clientsSvc, projectsSvc, wsSvc, tpls, lay)
 
 	mux := http.NewServeMux()
 	h.Register(mux, func(next http.Handler) http.Handler { return next })
@@ -90,6 +90,29 @@ func TestReportingCrossWorkspaceDenial(t *testing.T) {
 		mux.ServeHTTP(w, r)
 		if w.Result().StatusCode != http.StatusNotFound {
 			t.Fatalf("filter foreign project: got %d want 404", w.Result().StatusCode)
+		}
+	})
+
+	// Partial endpoint: same cross-workspace rules apply.
+	t.Run("partial-filter-by-foreign-client", func(t *testing.T) {
+		q := url.Values{"preset": {"this_week"}, "client_id": {f.ClientB.String()}}
+		r := httptest.NewRequest(http.MethodGet, "/reports/partial?"+q.Encode(), nil)
+		r = f.AttachAsUserA(r)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		if w.Result().StatusCode != http.StatusNotFound {
+			t.Fatalf("partial filter foreign client: got %d want 404", w.Result().StatusCode)
+		}
+	})
+
+	t.Run("partial-filter-by-foreign-project", func(t *testing.T) {
+		q := url.Values{"preset": {"this_week"}, "project_id": {f.ProjectB.String()}}
+		r := httptest.NewRequest(http.MethodGet, "/reports/partial?"+q.Encode(), nil)
+		r = f.AttachAsUserA(r)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		if w.Result().StatusCode != http.StatusNotFound {
+			t.Fatalf("partial filter foreign project: got %d want 404", w.Result().StatusCode)
 		}
 	})
 

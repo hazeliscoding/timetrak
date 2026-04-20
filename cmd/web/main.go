@@ -20,6 +20,7 @@ import (
 	"timetrak/internal/projects"
 	"timetrak/internal/rates"
 	"timetrak/internal/reporting"
+	"timetrak/internal/settings"
 	"timetrak/internal/shared/authz"
 	"timetrak/internal/shared/clock"
 	"timetrak/internal/shared/csrf"
@@ -124,15 +125,25 @@ func main() {
 
 	layoutBuilder := layout.New(pool, wsSvc)
 
+	// Timezones: snapshot at startup so the settings <select> is
+	// populated without hitting pg_timezone_names on every request. Safe
+	// to cache — the Postgres list is effectively static per version.
+	tzList, err := wsSvc.ListTimezones(ctx)
+	if err != nil {
+		logger.Error("load timezones", "err", err)
+		os.Exit(1)
+	}
+
 	// Handlers.
 	authHandler := auth.NewHandler(authSvc, store, tpls, limiter)
 	wsHandler := workspace.NewHandler(wsSvc)
+	settingsHandler := settings.NewHandler(wsSvc, tpls, layoutBuilder, tzList)
 	clientsHandler := clients.NewHandler(clientsSvc, tpls, layoutBuilder)
 	projectsHandler := projects.NewHandler(projectsSvc, clientsSvc, tpls, layoutBuilder)
 	ratesHandler := rates.NewHandler(ratesSvc, clientsSvc, projectsSvc, tpls, layoutBuilder)
 	trackingHandler := tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, tpls, layoutBuilder)
 	trackingHandler.SetLogger(logger)
-	reportsHandler := reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, tpls, layoutBuilder)
+	reportsHandler := reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, wsSvc, tpls, layoutBuilder)
 
 	mux := http.NewServeMux()
 
@@ -167,6 +178,7 @@ func main() {
 	protect := func(next http.Handler) http.Handler {
 		return authz.RequireAuth(authzSvc.RequireWorkspace(next))
 	}
+	settingsHandler.Register(mux, protect)
 	clientsHandler.Register(mux, protect)
 	projectsHandler.Register(mux, protect)
 	ratesHandler.Register(mux, protect)

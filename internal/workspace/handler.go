@@ -18,7 +18,8 @@ type Handler struct {
 // NewHandler constructs the handler.
 func NewHandler(svc *Service) *Handler { return &Handler{svc: svc} }
 
-// Register mounts /workspace/switch.
+// Register mounts the public /workspace/switch route. Settings routes live
+// in their own package (internal/settings) to avoid a cycle with layout.
 func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /workspace/switch", h.postSwitch)
 }

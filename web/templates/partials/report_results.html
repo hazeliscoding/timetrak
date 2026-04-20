@@ -1,0 +1,99 @@
+{{define "reports.partial.results"}}
+{{template "report_summary" .Report.Totals}}
+
+{{if .SortedCurrencies}}
+  <section class="card" aria-labelledby="grand-total-label">
+    <h2 id="grand-total-label" class="mt-0">Estimated billable (grand total)</h2>
+    <dl class="grand-total">
+      {{range $i, $cur := .SortedCurrencies}}
+        <div class="grand-total-row">
+          <dt>{{$cur}}</dt>
+          <dd class="num tabular">{{formatMinor (index $.Report.Totals.EstimatedByCurrency $cur) $cur}}</dd>
+        </div>
+      {{end}}
+    </dl>
+  </section>
+{{end}}
+
+{{if gt .Report.NoRateCount 0}}
+  <div class="flash" role="status">
+    <span class="badge badge-warning">No rate</span>
+    {{.Report.NoRateCount}} billable entr{{if eq .Report.NoRateCount 1}}y{{else}}ies{{end}} in this range had no resolved rate and contributed 0.
+  </div>
+{{end}}
+
+{{if eq .Grouping "day"}}
+  {{if not .Report.ByDay}}
+    {{template "reports.partial.empty" .}}
+  {{else}}
+  <table class="table" aria-label="Totals by day">
+    <caption>Totals by day</caption>
+    <thead><tr>
+      <th scope="col">Day</th><th scope="col" class="num">Total</th>
+      <th scope="col" class="num">Billable</th><th scope="col" class="num">Non-billable</th>
+    </tr></thead>
+    <tbody>
+      {{range .Report.ByDay}}
+        <tr>
+          <td>{{.Label}}</td>
+          <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
+          <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
+          <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
+        </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
+{{else if eq .Grouping "client"}}
+  {{if not .Report.ByClient}}
+    {{template "reports.partial.empty" .}}
+  {{else}}
+  <table class="table" aria-label="Totals by client">
+    <caption>Totals by client</caption>
+    <thead><tr>
+      <th scope="col">Client</th><th scope="col" class="num">Total</th>
+      <th scope="col" class="num">Billable</th><th scope="col" class="num">Non-billable</th>
+      <th scope="col">Estimated billable</th>
+    </tr></thead>
+    <tbody>
+      {{range .Report.ByClient}}
+        <tr>
+          <td>{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</td>
+          <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
+          <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
+          <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
+          <td>{{range $cur, $amt := .EstimatedByCurrency}}<div>{{formatMinor $amt $cur}}</div>{{else}}<span class="muted">—</span>{{end}}</td>
+        </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
+{{else}}
+  {{if not .Report.ByProject}}
+    {{template "reports.partial.empty" .}}
+  {{else}}
+  <table class="table" aria-label="Totals by project">
+    <caption>Totals by project</caption>
+    <thead><tr>
+      <th scope="col">Project</th><th scope="col">Client</th>
+      <th scope="col" class="num">Total</th>
+      <th scope="col" class="num">Billable</th>
+      <th scope="col" class="num">Non-billable</th>
+      <th scope="col">Estimated billable</th>
+    </tr></thead>
+    <tbody>
+      {{range .Report.ByProject}}
+        <tr>
+          <td>{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</td>
+          <td>{{.ClientLabel}}</td>
+          <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
+          <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
+          <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
+          <td>{{range $cur, $amt := .EstimatedByCurrency}}<div>{{formatMinor $amt $cur}}</div>{{else}}<span class="muted">—</span>{{end}}</td>
+        </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{end}}
+{{end}}
+{{end}}

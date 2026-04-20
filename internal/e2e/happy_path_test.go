@@ -76,7 +76,7 @@ func buildServer(t *testing.T) *httptest.Server {
 	projects.NewHandler(projectsSvc, clientsSvc, tpls, lay).Register(mux, protect)
 	rates.NewHandler(ratesSvc, clientsSvc, projectsSvc, tpls, lay).Register(mux, protect)
 	tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, tpls, lay).Register(mux, protect)
-	reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, tpls, lay).Register(mux, protect)
+	reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, wsSvc, tpls, lay).Register(mux, protect)
 
 	var handler http.Handler = mux
 	handler = csrf.Middleware(secret, false)(handler)

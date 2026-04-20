@@ -265,7 +265,6 @@ func TestHX_DeleteReferenced_Conflict_NoRatesChanged(t *testing.T) {
 	mux, f, ratesSvc, pool := setupHTMX(t)
 	ctx := context.Background()
 
-
 	from := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	ruleID, err := ratesSvc.Create(ctx, f.WorkspaceA, rates.Input{
 		CurrencyCode: "USD", HourlyRateMinor: 10000, EffectiveFrom: from,
@@ -375,7 +374,6 @@ func TestNonHX_Regression_303Redirect(t *testing.T) {
 func TestHX_TamperedImmutableFieldOnReferencedRule_Rejected(t *testing.T) {
 	mux, f, ratesSvc, pool := setupHTMX(t)
 	ctx := context.Background()
-
 
 	from := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	ruleID, err := ratesSvc.Create(ctx, f.WorkspaceA, rates.Input{
