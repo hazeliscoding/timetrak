@@ -8,7 +8,7 @@ endif
 
 DATABASE_URL ?= postgres://timetrak:timetrak@localhost:5432/timetrak?sslmode=disable
 
-.PHONY: run build test lint migrate-up migrate-down migrate-redo dev-seed db-up db-down fmt vet tidy
+.PHONY: run build test lint migrate-up migrate-down migrate-redo dev-seed backfill-rate-snapshots check-rate-snapshots db-up db-down fmt vet tidy
 
 run:
 	go run ./cmd/web
@@ -46,6 +46,21 @@ migrate-redo:
 
 dev-seed:
 	go run ./cmd/migrate seed
+
+# Populate time_entries.rate_rule_id / hourly_rate_minor / currency_code for
+# closed entries missing a snapshot. Idempotent. Use DRY_RUN=1 to probe without
+# writing.
+backfill-rate-snapshots:
+ifeq ($(DRY_RUN),1)
+	go run ./cmd/migrate backfill-rate-snapshots --dry-run
+else
+	go run ./cmd/migrate backfill-rate-snapshots
+endif
+
+# Deploy gate: fails non-zero when any closed billable entry has a NULL rate
+# snapshot. Intended to run in CI / pre-deploy after backfill-rate-snapshots.
+check-rate-snapshots:
+	go run ./cmd/migrate check-rate-snapshots
 
 db-up:
 	docker compose up -d postgres

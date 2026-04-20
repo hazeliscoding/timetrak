@@ -985,6 +985,16 @@ They prevent:
 - stale stop operations
 - inconsistent duration calculations
 
+### Stage 2 hardening: tracking integrity taxonomy
+
+Post-MVP, tracking integrity is enforced with three defence-in-depth layers and surfaced to callers through a small typed-error taxonomy:
+
+1. **Partial unique index** (`ux_time_entries_one_active_per_user_workspace`) caps active entries per `(workspace_id, user_id)` to one. Concurrent starts collide with SQLSTATE 23505 → `ErrActiveTimerExists` → HTTP 409 / `tracking.active_timer`.
+2. **Interval CHECK** (`chk_time_entries_interval`, strict `ended_at > started_at`) rejects zero- and negative-duration writes with SQLSTATE 23514 → `ErrInvalidInterval` → HTTP 422 / `tracking.invalid_interval`.
+3. **Composite foreign key** (`time_entries(project_id, workspace_id) → projects(id, workspace_id)`) rejects cross-workspace project references with SQLSTATE 23503 → `ErrCrossWorkspaceProject` → HTTP 422 / `tracking.cross_workspace`. Cross-workspace denial still runs first at the service layer (404); the FK is defence in depth.
+
+`tracking.Service.StopTimer` runs inside `pool.InTx` with `SELECT ... FOR UPDATE`, uses the database server clock (`now()`) to set `ended_at`, and guards the UPDATE with `WHERE ended_at IS NULL` so a concurrent second stop is idempotent within a 5-second window. Every taxonomy response is logged at `warn` with structured fields `tracking.error_kind`, `workspace_id`, `user_id`, plus `entry_id` / `project_id` when known; unmapped SQLSTATEs log at `error` with no `error_kind` and respond 500.
+
 ---
 
 ## 24. Deployment Architecture
@@ -1221,7 +1231,16 @@ Join `time_entries -> projects -> clients`, grouped by client.
 
 ### Billable Value Summary
 
-Aggregate tracked duration and multiply by resolved hourly rate or precomputed invoice snapshot later.
+Closed (`ended_at IS NOT NULL`) billable entries carry a per-entry rate
+snapshot (`rate_rule_id`, `hourly_rate_minor`, `currency_code`) written at
+stop/save time by the tracking domain. Reporting's read-path invariant:
+**closed entries are scored entirely from their snapshot**; the read path
+never calls `rates.Service.Resolve` and never consults the live
+`rate_rules` table. This keeps historical totals stable across retroactive
+rate-rule edits. Closed billable entries with a NULL snapshot contribute
+zero and increment `EntriesWithoutRate` / `NoRateCount`; operators clear
+that state via `make backfill-rate-snapshots`, and `make check-rate-snapshots`
+is the deploy gate that enforces the invariant is achievable before release.
 
 ---
 
