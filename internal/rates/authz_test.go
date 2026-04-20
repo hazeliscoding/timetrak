@@ -54,6 +54,26 @@ func TestRatesCrossWorkspaceDenialMatrix(t *testing.T) {
 	mux := http.NewServeMux()
 	h.Register(mux, func(next http.Handler) http.Handler { return next })
 
+	// GET edit/row partials for a foreign rule: 404.
+	t.Run("edit-foreign-rule", func(t *testing.T) {
+		r := newRequest(http.MethodGet, "/rates/"+ruleB.String()+"/edit", nil)
+		r = f.AttachAsUserA(r)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		if w.Result().StatusCode != http.StatusNotFound {
+			t.Fatalf("edit foreign rule: got %d want 404", w.Result().StatusCode)
+		}
+	})
+	t.Run("row-foreign-rule", func(t *testing.T) {
+		r := newRequest(http.MethodGet, "/rates/"+ruleB.String()+"/row", nil)
+		r = f.AttachAsUserA(r)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		if w.Result().StatusCode != http.StatusNotFound {
+			t.Fatalf("row foreign rule: got %d want 404", w.Result().StatusCode)
+		}
+	})
+
 	// Delete a foreign rate rule: 404.
 	t.Run("delete-foreign-rule", func(t *testing.T) {
 		body := url.Values{}

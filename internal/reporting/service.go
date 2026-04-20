@@ -1,6 +1,15 @@
 // Package reporting aggregates time entries into totals and estimated billable
-// amounts. Rate resolution is always delegated to `rates.Service.Resolve` so
-// reports and (future) invoicing share a single source of truth.
+// amounts.
+//
+// Invariant (steady state): for closed (`ended_at IS NOT NULL`) entries, the
+// per-entry rate snapshot (`rate_rule_id`, `hourly_rate_minor`,
+// `currency_code`) persisted at stop/save time by the tracking domain is the
+// sole source of truth for estimated billable amounts. The reporting read
+// path MUST NOT call `rates.Service.Resolve` for any closed entry, regardless
+// of environment configuration — doing so would let retroactive rule edits
+// silently move historical totals. Closed billable entries with a NULL
+// snapshot contribute zero and are counted toward `EntriesWithoutRate` /
+// `NoRateCount`; the operator-facing fix is `migrate backfill-rate-snapshots`.
 package reporting
 
 import (
@@ -10,20 +19,19 @@ import (
 
 	"github.com/google/uuid"
 
-	"timetrak/internal/rates"
 	"timetrak/internal/shared/db"
-	"timetrak/internal/shared/money"
 )
 
 // Service exposes report queries.
 type Service struct {
-	pool  *db.Pool
-	rates *rates.Service
+	pool *db.Pool
 }
 
-// NewService constructs the reporting service.
-func NewService(pool *db.Pool, rs *rates.Service) *Service {
-	return &Service{pool: pool, rates: rs}
+// NewService constructs the reporting service. The reporting read path has no
+// runtime dependency on rate resolution; closed entries are scored entirely
+// from their own snapshot columns.
+func NewService(pool *db.Pool) *Service {
+	return &Service{pool: pool}
 }
 
 // DashboardSummary is the at-a-glance card set.
@@ -89,40 +97,101 @@ func (s *Service) totals(ctx context.Context, workspaceID, userID uuid.UUID, fro
 	return
 }
 
-// estimateBillable walks each billable entry in range and asks the rate service
-// for the rate active at entry.started_at. Accumulates per-currency minor units
-// and a no-rate counter.
+// estimateBillable sums billable amount per currency using the per-entry rate
+// snapshot columns. Only closed (`ended_at IS NOT NULL`) billable entries are
+// considered. Entries without a snapshot contribute zero and are counted in
+// the `no_rate` aggregate. The rate-resolution service is never consulted.
 func (s *Service) estimateBillable(ctx context.Context, workspaceID, userID uuid.UUID, from, to time.Time) (map[string]int64, int, error) {
-	rows, err := s.pool.Query(ctx, `
-		SELECT project_id, started_at, duration_seconds
-		FROM time_entries
-		WHERE workspace_id = $1 AND user_id = $2 AND is_billable = true
-		  AND started_at >= $3 AND started_at <= $4
-	`, workspaceID, userID, from, to)
+	return s.estimateScoped(ctx, workspaceID, userID, from, to, "", uuid.Nil)
+}
+
+// estimateByClient / estimateByProject are scoped wrappers over estimateScoped.
+func (s *Service) estimateByClient(ctx context.Context, workspaceID, userID, clientID uuid.UUID, rng Range) (map[string]int64, error) {
+	out, _, err := s.estimateScoped(ctx, workspaceID, userID, dayStart(rng.From), dayEnd(rng.To), "client", clientID)
+	return out, err
+}
+
+func (s *Service) estimateByProject(ctx context.Context, workspaceID, userID, projectID uuid.UUID, rng Range) (map[string]int64, error) {
+	out, _, err := s.estimateScoped(ctx, workspaceID, userID, dayStart(rng.From), dayEnd(rng.To), "project", projectID)
+	return out, err
+}
+
+// estimateScoped performs the aggregating query. `scope` ∈ {"", "client", "project"}.
+// For closed entries whose snapshot is NULL (`hourly_rate_minor IS NULL`), the
+// row is counted toward `noRate` (only used for the whole-range variant) and
+// contributes zero to the per-currency total. The reporting read path does
+// not consult `rates.Service.Resolve` for any closed entry.
+func (s *Service) estimateScoped(
+	ctx context.Context,
+	workspaceID, userID uuid.UUID,
+	from, to time.Time,
+	scope string,
+	scopeID uuid.UUID,
+) (map[string]int64, int, error) {
+	out := map[string]int64{}
+
+	// Aggregate billable amount by currency in SQL. Only closed entries.
+	aggSQL := `
+		SELECT te.currency_code,
+		       COALESCE(SUM((te.duration_seconds * te.hourly_rate_minor) / 3600), 0)
+		FROM time_entries te
+		JOIN projects p ON p.id = te.project_id
+		WHERE te.workspace_id = $1 AND te.user_id = $2
+		  AND te.is_billable = true
+		  AND te.ended_at IS NOT NULL
+		  AND te.hourly_rate_minor IS NOT NULL
+		  AND te.currency_code IS NOT NULL
+		  AND te.started_at >= $3 AND te.started_at <= $4
+	`
+	args := []any{workspaceID, userID, from, to}
+	switch scope {
+	case "client":
+		aggSQL += ` AND p.client_id = $5`
+		args = append(args, scopeID)
+	case "project":
+		aggSQL += ` AND te.project_id = $5`
+		args = append(args, scopeID)
+	}
+	aggSQL += ` GROUP BY te.currency_code`
+
+	rows, err := s.pool.Query(ctx, aggSQL, args...)
 	if err != nil {
 		return nil, 0, err
 	}
-	defer rows.Close()
-	out := map[string]int64{}
-	var noRate int
 	for rows.Next() {
-		var projectID uuid.UUID
-		var started time.Time
-		var seconds int64
-		if err := rows.Scan(&projectID, &started, &seconds); err != nil {
+		var ccy string
+		var amt int64
+		if err := rows.Scan(&ccy, &amt); err != nil {
+			rows.Close()
 			return nil, 0, err
 		}
-		res, err := s.rates.Resolve(ctx, workspaceID, projectID, started)
-		if err != nil {
-			return nil, 0, err
-		}
-		if !res.Found {
-			noRate++
-			continue
-		}
-		out[res.CurrencyCode] += money.DurationBillable(seconds, res.HourlyRateMinor)
+		out[ccy] += amt
 	}
-	return out, noRate, rows.Err()
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	// Count closed billable entries missing a snapshot (whole-range only).
+	// Per spec: running entries (`ended_at IS NULL`) MUST NOT contribute and
+	// MUST NOT be counted here.
+	var noRate int
+	if scope == "" {
+		noRateSQL := `
+			SELECT count(*)
+			FROM time_entries te
+			WHERE te.workspace_id = $1 AND te.user_id = $2
+			  AND te.is_billable = true
+			  AND te.ended_at IS NOT NULL
+			  AND te.hourly_rate_minor IS NULL
+			  AND te.started_at >= $3 AND te.started_at <= $4
+		`
+		if err := s.pool.QueryRow(ctx, noRateSQL, workspaceID, userID, from, to).Scan(&noRate); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	return out, noRate, nil
 }
 
 // Report is the table view returned by Report.
@@ -270,7 +339,6 @@ func (s *Service) groupByClient(ctx context.Context, workspaceID, userID uuid.UU
 		gb.TotalSeconds = tot
 		gb.BillableSeconds = bill
 		gb.NonBillableSeconds = tot - bill
-		// Aggregate estimated billable via per-entry rate resolve.
 		est, err := s.estimateByClient(ctx, workspaceID, userID, gb.ID, rng)
 		if err != nil {
 			return nil, err
@@ -314,68 +382,6 @@ func (s *Service) groupByProject(ctx context.Context, workspaceID, userID uuid.U
 		}
 		gb.EstimatedByCurrency = est
 		out = append(out, gb)
-	}
-	return out, rows.Err()
-}
-
-func (s *Service) estimateByClient(ctx context.Context, workspaceID, userID, clientID uuid.UUID, rng Range) (map[string]int64, error) {
-	rows, err := s.pool.Query(ctx, `
-		SELECT te.project_id, te.started_at, te.duration_seconds
-		FROM time_entries te
-		JOIN projects p ON p.id = te.project_id
-		WHERE te.workspace_id = $1 AND te.user_id = $2 AND te.is_billable
-		  AND p.client_id = $3
-		  AND te.started_at::date >= $4 AND te.started_at::date <= $5
-	`, workspaceID, userID, clientID, rng.From, rng.To)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	out := map[string]int64{}
-	for rows.Next() {
-		var pid uuid.UUID
-		var started time.Time
-		var sec int64
-		if err := rows.Scan(&pid, &started, &sec); err != nil {
-			return nil, err
-		}
-		res, err := s.rates.Resolve(ctx, workspaceID, pid, started)
-		if err != nil {
-			return nil, err
-		}
-		if res.Found {
-			out[res.CurrencyCode] += money.DurationBillable(sec, res.HourlyRateMinor)
-		}
-	}
-	return out, rows.Err()
-}
-
-func (s *Service) estimateByProject(ctx context.Context, workspaceID, userID, projectID uuid.UUID, rng Range) (map[string]int64, error) {
-	rows, err := s.pool.Query(ctx, `
-		SELECT started_at, duration_seconds
-		FROM time_entries
-		WHERE workspace_id = $1 AND user_id = $2 AND is_billable
-		  AND project_id = $3
-		  AND started_at::date >= $4 AND started_at::date <= $5
-	`, workspaceID, userID, projectID, rng.From, rng.To)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	out := map[string]int64{}
-	for rows.Next() {
-		var started time.Time
-		var sec int64
-		if err := rows.Scan(&started, &sec); err != nil {
-			return nil, err
-		}
-		res, err := s.rates.Resolve(ctx, workspaceID, projectID, started)
-		if err != nil {
-			return nil, err
-		}
-		if res.Found {
-			out[res.CurrencyCode] += money.DurationBillable(sec, res.HourlyRateMinor)
-		}
 	}
 	return out, rows.Err()
 }

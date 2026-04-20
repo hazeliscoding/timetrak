@@ -13,7 +13,6 @@ import (
 
 	"timetrak/internal/clients"
 	"timetrak/internal/projects"
-	"timetrak/internal/rates"
 	"timetrak/internal/reporting"
 	"timetrak/internal/shared/authz"
 	sharedhttp "timetrak/internal/shared/http"
@@ -56,8 +55,7 @@ func TestReportingCrossWorkspaceDenial(t *testing.T) {
 
 	clientsSvc := clients.NewService(pool)
 	projectsSvc := projects.NewService(pool)
-	ratesSvc := rates.NewService(pool)
-	reportSvc := reporting.NewService(pool, ratesSvc)
+	reportSvc := reporting.NewService(pool)
 	authzSvc := authz.NewService(pool.Pool)
 	wsSvc := workspace.NewService(pool, authzSvc, nil)
 	lay := layout.New(pool, wsSvc)

@@ -14,6 +14,12 @@
 //	redo   run down then up on the most recently applied migration
 //	status show what is applied
 //	seed   populate a demo dataset (dev only)
+//	backfill-rate-snapshots
+//	       populate time_entries.rate_rule_id / hourly_rate_minor / currency_code
+//	       for closed entries missing a snapshot. Accepts --dry-run.
+//	check-rate-snapshots
+//	       report closed billable entries with a NULL snapshot, per workspace.
+//	       Exits non-zero when any offender is found — intended as a deploy gate.
 package main
 
 import (
@@ -49,7 +55,7 @@ type migration struct {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: migrate up|down|redo|status|seed")
+		fmt.Fprintln(os.Stderr, "usage: migrate up|down|redo|status|seed|backfill-rate-snapshots [--dry-run]|check-rate-snapshots")
 		os.Exit(2)
 	}
 	dsn := os.Getenv("DATABASE_URL")
@@ -90,6 +96,14 @@ func main() {
 		}
 	case "seed":
 		if err := cmdSeed(ctx, pool); err != nil {
+			log.Fatal(err)
+		}
+	case "backfill-rate-snapshots":
+		if err := cmdBackfillRateSnapshots(ctx, pool, os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+	case "check-rate-snapshots":
+		if err := cmdCheckRateSnapshots(ctx, pool); err != nil {
 			log.Fatal(err)
 		}
 	default:

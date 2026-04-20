@@ -119,8 +119,8 @@ func main() {
 	clientsSvc := clients.NewService(pool)
 	projectsSvc := projects.NewService(pool)
 	ratesSvc := rates.NewService(pool)
-	reportingSvc := reporting.NewService(pool, ratesSvc)
-	trackingSvc := tracking.NewService(pool, sysClock)
+	reportingSvc := reporting.NewService(pool)
+	trackingSvc := tracking.NewService(pool, sysClock, ratesSvc)
 
 	layoutBuilder := layout.New(pool, wsSvc)
 
@@ -131,6 +131,7 @@ func main() {
 	projectsHandler := projects.NewHandler(projectsSvc, clientsSvc, tpls, layoutBuilder)
 	ratesHandler := rates.NewHandler(ratesSvc, clientsSvc, projectsSvc, tpls, layoutBuilder)
 	trackingHandler := tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, tpls, layoutBuilder)
+	trackingHandler.SetLogger(logger)
 	reportsHandler := reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, tpls, layoutBuilder)
 
 	mux := http.NewServeMux()
