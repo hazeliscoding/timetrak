@@ -1,0 +1,18 @@
+{{define "empty_state"}}
+{{/*
+  Copy-first empty block. Used for lists/tables/filtered results with no rows.
+  No icon, no color-only meaning.
+
+  Context:
+    .Title      — required h2 copy
+    .Body       — required one-sentence explanation (plain string)
+    .ActionHref — optional link href for a primary action
+    .ActionText — optional link text (required if ActionHref set)
+    .Live       — optional bool; when truthy emits aria-live="polite"
+                  (use when the empty state can arrive via an HTMX swap)
+*/}}
+<div class="empty card"{{if .Live}} aria-live="polite"{{end}}>
+  <h2>{{.Title}}</h2>
+  <p class="muted">{{.Body}}{{if and .ActionHref .ActionText}} <a href="{{.ActionHref}}">{{.ActionText}}</a>{{end}}</p>
+</div>
+{{end}}

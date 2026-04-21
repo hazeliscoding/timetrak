@@ -1,4 +1,11 @@
 {{define "flash"}}
+  {{/*
+    Page-level toast list. Severity drives the ARIA role:
+      success / info / warn → role="status" (non-urgent, polite)
+      error                 → role="alert"  (urgent, immediate)
+    Status is conveyed via role + text + the flash-<kind> class; never color
+    alone.
+  */}}
   {{if .}}
     {{range .}}
       {{if eq .Kind "error"}}

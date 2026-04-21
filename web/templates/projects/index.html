@@ -24,9 +24,7 @@
     <form method="post" action="/projects" class="card">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
       <h2 class="mt-0">New project</h2>
-      {{if .NewForm.Error}}
-        <div id="new-project-form-error" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap>{{.NewForm.Error}}</div>
-      {{end}}
+      {{template "form_errors" (dict "ID" "new-project-form-error" "Message" .NewForm.Error)}}
       <div class="row">
         <div class="field" style="flex:1;min-width:180px;margin-bottom:0">
           <label for="new-client">Client</label>
@@ -55,17 +53,11 @@
       </div>
     </form>
   {{else}}
-    <div class="empty card">
-      <h2>Add a client first</h2>
-      <p class="muted">Projects live under clients. <a href="/clients">Create a client</a> to start tracking projects.</p>
-    </div>
+    {{template "empty_state" (dict "Title" "Add a client first" "Body" "Projects live under clients." "ActionHref" "/clients" "ActionText" "Create a client")}}
   {{end}}
 
   {{if not .Projects}}
-    <div class="empty card">
-      <h2>No projects yet</h2>
-      <p class="muted">Create your first project above.</p>
-    </div>
+    {{template "empty_state" (dict "Title" "No projects yet" "Body" "Create your first project above.")}}
   {{else}}
   <table class="table" aria-label="Projects">
     <caption class="sr-only">Projects in this workspace</caption>

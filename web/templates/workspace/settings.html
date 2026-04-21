@@ -11,9 +11,7 @@
       Reports bucket time entries into calendar days using this timezone.
       Changing it takes effect on the next report request — existing entries are not modified.
     </p>
-    {{if .FormError}}
-      <div id="ws-settings-error" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap>{{.FormError}}</div>
-    {{end}}
+    {{template "form_errors" (dict "ID" "ws-settings-error" "Message" .FormError)}}
     <div class="field">
       <label for="ws-tz">Timezone</label>
       <select id="ws-tz" name="reporting_timezone"

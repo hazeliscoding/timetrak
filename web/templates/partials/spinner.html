@@ -1,5 +1,15 @@
 {{define "spinner"}}
-<div id="report-loading" class="htmx-indicator spinner" role="status">
+{{/*
+  Inline loading indicator. Paired with HTMX hx-indicator.
+  role="status" + aria-live="polite" + sr-only label. Does NOT pair with
+  data-focus-after-swap — the indicator should not steal focus; the eventual
+  swap (table, results, row) is the real completion signal.
+
+  The fixed id="report-loading" matches the one reports/index.html wires into
+  hx-indicator. If future callers need a different indicator they SHOULD
+  add a new partial rather than parameterising this one.
+*/}}
+<div id="report-loading" class="htmx-indicator spinner" role="status" aria-live="polite">
   <span class="sr-only">Loading…</span>
   <span aria-hidden="true" class="spinner-dot"></span>
   <span aria-hidden="true" class="spinner-dot"></span>

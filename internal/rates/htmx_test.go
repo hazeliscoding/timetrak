@@ -89,7 +89,7 @@ func TestHX_EditRowAndRow_NotFoundCrossWorkspace(t *testing.T) {
 			if w.Result().StatusCode != http.StatusOK {
 				t.Fatalf("%s in-workspace: got %d want 200", name, w.Result().StatusCode)
 			}
-			if !strings.Contains(w.Body.String(), `id="rate-`+ruleA.String()+`"`) {
+			if !strings.Contains(w.Body.String(), `id="rate-row-`+ruleA.String()+`"`) {
 				t.Fatalf("%s in-workspace: response missing rate_row for own rule", name)
 			}
 		})
@@ -165,7 +165,7 @@ func TestHX_UpdateSuccess_ReturnsRowDisplayAndEmitsRatesChanged(t *testing.T) {
 		t.Fatalf("HX-Trigger: got %q want rates-changed", trig)
 	}
 	body2 := w.Body.String()
-	if !strings.Contains(body2, `id="rate-`+ruleID.String()+`"`) {
+	if !strings.Contains(body2, `id="rate-row-`+ruleID.String()+`"`) {
 		t.Fatalf("body missing rate_row for updated rule")
 	}
 	// Display mode has no hx-post="/rates/{id}" form for edit body.
@@ -212,7 +212,7 @@ func TestHX_UpdateReferencedRule_Conflict_NoRatesChanged(t *testing.T) {
 		t.Fatalf("HX-Trigger should NOT contain rates-changed, got %q", trig)
 	}
 	bodyStr := w.Body.String()
-	if !strings.Contains(bodyStr, `id="rate-`+ruleID.String()+`"`) {
+	if !strings.Contains(bodyStr, `id="rate-row-`+ruleID.String()+`"`) {
 		t.Fatalf("body missing rate_row for conflicting rule")
 	}
 	if !strings.Contains(bodyStr, `hx-post="/rates/`+ruleID.String()+`"`) {
@@ -256,7 +256,7 @@ func TestHX_DeleteUnreferenced_RefreshTableEmitsRatesChanged(t *testing.T) {
 	if !strings.Contains(bodyStr, `id="rates-table"`) {
 		t.Fatalf("body missing rates_table partial")
 	}
-	if strings.Contains(bodyStr, `id="rate-`+ruleID.String()+`"`) {
+	if strings.Contains(bodyStr, `id="rate-row-`+ruleID.String()+`"`) {
 		t.Fatalf("body should not contain the deleted row")
 	}
 }
@@ -291,7 +291,7 @@ func TestHX_DeleteReferenced_Conflict_NoRatesChanged(t *testing.T) {
 		t.Fatalf("HX-Trigger should NOT contain rates-changed, got %q", trig)
 	}
 	bodyStr := w.Body.String()
-	if !strings.Contains(bodyStr, `id="rate-`+ruleID.String()+`"`) {
+	if !strings.Contains(bodyStr, `id="rate-row-`+ruleID.String()+`"`) {
 		t.Fatalf("body missing rate_row for referenced rule")
 	}
 	// Display mode — the referenced rule's row must not include the edit form.

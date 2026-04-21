@@ -1,8 +1,8 @@
 {{define "rate_row"}}
-<tr id="rate-{{.Rule.ID}}">
+<tr id="rate-row-{{.Rule.ID}}">
   {{if .Edit}}
     <td colspan="8">
-      <form hx-post="/rates/{{.Rule.ID}}" hx-target="#rate-{{.Rule.ID}}" hx-swap="outerHTML" class="row" style="flex-wrap:wrap;gap:.5rem;align-items:flex-end">
+      <form hx-post="/rates/{{.Rule.ID}}" hx-target="#rate-row-{{.Rule.ID}}" hx-swap="outerHTML" class="row" style="flex-wrap:wrap;gap:.5rem;align-items:flex-end">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <input type="hidden" name="scope" value="{{if eq .Rule.Level "project"}}project{{else if eq .Rule.Level "client"}}client{{else}}workspace{{end}}">
         {{if eq .Rule.Level "client"}}<input type="hidden" name="client_id" value="{{.Rule.ClientID}}">{{end}}
@@ -22,7 +22,7 @@
         <button type="submit" class="btn btn-primary">Save end date</button>
         <button type="button" class="btn"
                 hx-get="/rates/{{.Rule.ID}}/row"
-                hx-target="#rate-{{.Rule.ID}}" hx-swap="outerHTML">Cancel</button>
+                hx-target="#rate-row-{{.Rule.ID}}" hx-swap="outerHTML">Cancel</button>
         {{if .Error}}
           <span id="rate-edit-error-{{.Rule.ID}}" class="error" role="alert" aria-live="assertive">&#9888; {{.Error}}</span>
         {{end}}
@@ -52,7 +52,7 @@
       {{end}}
       <button type="button" class="btn btn-ghost"
               hx-get="/rates/{{.Rule.ID}}/edit"
-              hx-target="#rate-{{.Rule.ID}}" hx-swap="outerHTML"
+              hx-target="#rate-row-{{.Rule.ID}}" hx-swap="outerHTML"
               aria-describedby="{{if gt .Rule.ReferencedByCount 0}}rate-ref-{{.Rule.ID}}{{end}}"
               data-focus-after-swap>Edit end date</button>
       {{if gt .Rule.ReferencedByCount 0}}

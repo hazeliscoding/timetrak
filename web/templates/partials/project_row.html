@@ -1,8 +1,8 @@
 {{define "project_row"}}
-<tr id="project-{{.Project.ID}}">
+<tr id="project-row-{{.Project.ID}}">
   {{if .Edit}}
     <td colspan="6">
-      <form hx-patch="/projects/{{.Project.ID}}" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML" class="row">
+      <form hx-patch="/projects/{{.Project.ID}}" hx-target="#project-row-{{.Project.ID}}" hx-swap="outerHTML" class="row">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         {{if .Error}}
           <div id="project-edit-error-{{.Project.ID}}" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap style="flex-basis:100%">{{.Error}}</div>
@@ -21,7 +21,7 @@
           Default billable
         </label>
         <button type="submit" class="btn btn-primary">Save</button>
-        <button type="button" class="btn" hx-get="/projects/{{.Project.ID}}/row" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML">Cancel</button>
+        <button type="button" class="btn" hx-get="/projects/{{.Project.ID}}/row" hx-target="#project-row-{{.Project.ID}}" hx-swap="outerHTML">Cancel</button>
       </form>
     </td>
   {{else}}
@@ -37,14 +37,14 @@
       {{else}}<span class="muted">Active</span>{{end}}
     </td>
     <td class="row" style="justify-content:flex-end">
-      <button type="button" class="btn btn-ghost" data-focus-after-swap hx-get="/projects/{{.Project.ID}}/edit" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML">Edit</button>
+      <button type="button" class="btn btn-ghost" data-focus-after-swap hx-get="/projects/{{.Project.ID}}/edit" hx-target="#project-row-{{.Project.ID}}" hx-swap="outerHTML">Edit</button>
       {{if .Project.IsArchived}}
-        <form hx-post="/projects/{{.Project.ID}}/unarchive" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML" style="margin:0">
+        <form hx-post="/projects/{{.Project.ID}}/unarchive" hx-target="#project-row-{{.Project.ID}}" hx-swap="outerHTML" style="margin:0">
           <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
           <button type="submit" class="btn btn-ghost">Unarchive</button>
         </form>
       {{else}}
-        <form hx-post="/projects/{{.Project.ID}}/archive" hx-target="#project-{{.Project.ID}}" hx-swap="outerHTML"
+        <form hx-post="/projects/{{.Project.ID}}/archive" hx-target="#project-row-{{.Project.ID}}" hx-swap="outerHTML"
               hx-confirm="Archive this project? It can be unarchived later; existing entries are preserved." style="margin:0">
           <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
           <button type="submit" class="btn btn-ghost">Archive</button>

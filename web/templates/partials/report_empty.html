@@ -1,6 +1,3 @@
 {{define "reports.partial.empty"}}
-<div class="empty card" role="status" aria-live="polite">
-  <h2>No entries match these filters</h2>
-  <p class="muted">Try a different preset, widen the dates, or clear a filter.</p>
-</div>
+{{template "empty_state" (dict "Title" "No entries match these filters" "Body" "Try a different preset, widen the dates, or clear a filter." "Live" true)}}
 {{end}}

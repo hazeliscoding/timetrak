@@ -1,0 +1,19 @@
+{{define "form_errors"}}
+{{/*
+  Top-of-form error summary. Renders a single message (server-side validation
+  is single-line for MVP). Focusable so callers can set data-focus-after-swap
+  on the summary to send keyboard and screen-reader focus to the error.
+
+  Context:
+    .ID       — stable id (controls reference it via aria-describedby)
+    .Message  — error copy; if empty the partial renders nothing
+    .NoFocus  — optional bool; when truthy suppresses data-focus-after-swap
+                (default: emit the attribute)
+*/}}
+{{if .Message}}
+<div id="{{.ID}}" class="flash flash-error" role="alert" tabindex="-1"
+     {{if not .NoFocus}}data-focus-after-swap{{end}}>
+  {{.Message}}
+</div>
+{{end}}
+{{end}}

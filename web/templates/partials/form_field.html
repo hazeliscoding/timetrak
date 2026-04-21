@@ -1,0 +1,43 @@
+{{define "form_field"}}
+{{/*
+  Visible-label text-style input with optional hint and optional inline error
+  binding. Scope: text, email, password, date, time, number, url, tel.
+
+  Selects, checkboxes, radio groups, composite date/time pairs, and
+  side-by-side field rows stay inline — extracting them forces slot explosion.
+
+  Context:
+    .ID           — required; matches <label for> and input id
+    .Name         — required; form field name
+    .Label        — required; visible label text
+    .Type         — optional; default "text"
+    .Value        — optional; current value
+    .Required     — optional bool
+    .Autofocus    — optional bool
+    .Autocomplete — optional string (e.g. "username", "current-password")
+    .Placeholder  — optional string
+    .Hint         — optional hint copy rendered below the input
+    .ErrorID      — optional; when .Invalid is true, wires aria-describedby
+    .Invalid      — optional bool; emits aria-invalid="true"
+    .Inputmode    — optional string (e.g. "decimal")
+    .Maxlength    — optional string; when non-empty emits maxlength
+    .Width        — optional inline width (e.g. "7rem")
+*/}}
+<div class="field"{{with .Width}} style="margin-bottom:0"{{end}}>
+  <label for="{{.ID}}">{{.Label}}</label>
+  <input id="{{.ID}}" name="{{.Name}}" type="{{with .Type}}{{.}}{{else}}text{{end}}"
+         value="{{.Value}}"
+         {{if .Required}}required aria-required="true"{{end}}
+         {{if .Autofocus}}autofocus{{end}}
+         {{with .Autocomplete}}autocomplete="{{.}}"{{end}}
+         {{with .Placeholder}}placeholder="{{.}}"{{end}}
+         {{with .Inputmode}}inputmode="{{.}}"{{end}}
+         {{with .Maxlength}}maxlength="{{.}}"{{end}}
+         {{if .Invalid}}aria-invalid="true"{{end}}
+         {{if and .Hint .ErrorID}}aria-describedby="{{.ID}}-hint {{.ErrorID}}"
+         {{else if .Hint}}aria-describedby="{{.ID}}-hint"
+         {{else if .ErrorID}}aria-describedby="{{.ErrorID}}"{{end}}
+         {{with .Width}}style="width:{{.}}"{{end}}>
+  {{with .Hint}}<span id="{{$.ID}}-hint" class="hint">{{.}}</span>{{end}}
+</div>
+{{end}}

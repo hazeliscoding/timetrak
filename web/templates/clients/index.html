@@ -16,9 +16,7 @@
   <form method="post" action="/clients" class="card">
     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
     <h2 class="mt-0">New client</h2>
-    {{if .NewForm.Error}}
-      <div id="new-client-form-error" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap>{{.NewForm.Error}}</div>
-    {{end}}
+    {{template "form_errors" (dict "ID" "new-client-form-error" "Message" .NewForm.Error)}}
     <div class="row">
       <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
         <label for="new-name">Name</label>
@@ -34,10 +32,7 @@
   </form>
 
   {{if not .Clients}}
-    <div class="empty card">
-      <h2>No clients yet</h2>
-      <p class="muted">Add your first client above to start tracking projects against it.</p>
-    </div>
+    {{template "empty_state" (dict "Title" "No clients yet" "Body" "Add your first client above to start tracking projects against it.")}}
   {{else}}
   <table class="table" aria-label="Clients">
     <caption class="sr-only">Clients in this workspace</caption>

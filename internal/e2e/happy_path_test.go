@@ -201,7 +201,7 @@ func TestHappyPathSignupToReport(t *testing.T) {
 	// Fetch the client id.
 	resp = c.get("/clients")
 	page := body(t, resp)
-	clientID := extractFirst(t, `id="client-([0-9a-f-]+)"`, page)
+	clientID := extractFirst(t, `id="client-row-([0-9a-f-]+)"`, page)
 
 	// Create a project.
 	resp = c.post("/projects", url.Values{
@@ -214,7 +214,7 @@ func TestHappyPathSignupToReport(t *testing.T) {
 	}
 	resp = c.get("/projects")
 	page = body(t, resp)
-	projectID := extractFirst(t, `id="project-([0-9a-f-]+)"`, page)
+	projectID := extractFirst(t, `id="project-row-([0-9a-f-]+)"`, page)
 
 	// Create a workspace-default rate.
 	todayStr := time.Now().UTC().Format("2006-01-02")
@@ -261,7 +261,7 @@ func TestWorkspaceIsolation404(t *testing.T) {
 		t.Fatalf("create client: %d", r.StatusCode)
 	}
 	r := a.get("/clients")
-	aClientID := extractFirst(t, `id="client-([0-9a-f-]+)"`, body(t, r))
+	aClientID := extractFirst(t, `id="client-row-([0-9a-f-]+)"`, body(t, r))
 
 	// Seed user B with a fresh workspace.
 	b := newClient(t, ts)

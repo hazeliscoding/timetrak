@@ -1,23 +1,23 @@
 {{define "client_row"}}
-<tr id="client-{{.Client.ID}}">
+<tr id="client-row-{{.Client.ID}}">
   {{if .Edit}}
     <td colspan="5">
-      <form hx-patch="/clients/{{.Client.ID}}" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML" class="row">
+      <form hx-patch="/clients/{{.Client.ID}}" hx-target="#client-row-{{.Client.ID}}" hx-swap="outerHTML" class="row">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         {{if .Error}}
-          <div id="client-edit-error-{{.Client.ID}}" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap style="flex-basis:100%">{{.Error}}</div>
+          <div id="client-row-edit-error-{{.Client.ID}}" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap style="flex-basis:100%">{{.Error}}</div>
         {{end}}
         <div class="field" style="flex:1;margin-bottom:0">
           <label class="sr-only" for="edit-name-{{.Client.ID}}">Name</label>
           <input id="edit-name-{{.Client.ID}}" name="name" type="text" value="{{.Client.Name}}" required aria-required="true"
-                 {{if .Error}}aria-invalid="true" aria-describedby="client-edit-error-{{.Client.ID}}"{{else}}autofocus data-focus-after-swap{{end}}>
+                 {{if .Error}}aria-invalid="true" aria-describedby="client-row-edit-error-{{.Client.ID}}"{{else}}autofocus data-focus-after-swap{{end}}>
         </div>
         <div class="field" style="flex:1;margin-bottom:0">
           <label class="sr-only" for="edit-email-{{.Client.ID}}">Contact email</label>
           <input id="edit-email-{{.Client.ID}}" name="contact_email" type="email" value="{{.Client.ContactEmail}}">
         </div>
         <button type="submit" class="btn btn-primary">Save</button>
-        <button type="button" class="btn" hx-get="/clients/{{.Client.ID}}/row" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML">Cancel</button>
+        <button type="button" class="btn" hx-get="/clients/{{.Client.ID}}/row" hx-target="#client-row-{{.Client.ID}}" hx-swap="outerHTML">Cancel</button>
       </form>
     </td>
   {{else}}
@@ -32,14 +32,14 @@
       {{end}}
     </td>
     <td class="row" style="justify-content:flex-end">
-      <button type="button" class="btn btn-ghost" data-focus-after-swap hx-get="/clients/{{.Client.ID}}/edit" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML">Edit</button>
+      <button type="button" class="btn btn-ghost" data-focus-after-swap hx-get="/clients/{{.Client.ID}}/edit" hx-target="#client-row-{{.Client.ID}}" hx-swap="outerHTML">Edit</button>
       {{if .Client.IsArchived}}
-        <form hx-post="/clients/{{.Client.ID}}/unarchive" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML" style="margin:0">
+        <form hx-post="/clients/{{.Client.ID}}/unarchive" hx-target="#client-row-{{.Client.ID}}" hx-swap="outerHTML" style="margin:0">
           <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
           <button type="submit" class="btn btn-ghost">Unarchive</button>
         </form>
       {{else}}
-        <form hx-post="/clients/{{.Client.ID}}/archive" hx-target="#client-{{.Client.ID}}" hx-swap="outerHTML"
+        <form hx-post="/clients/{{.Client.ID}}/archive" hx-target="#client-row-{{.Client.ID}}" hx-swap="outerHTML"
               hx-confirm="Archive this client? They can be unarchived later; existing entries are preserved." style="margin:0">
           <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
           <button type="submit" class="btn btn-ghost">Archive</button>

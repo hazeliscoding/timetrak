@@ -1,8 +1,8 @@
 {{define "entry_row"}}
-<tr id="entry-{{.Entry.ID}}">
+<tr id="entry-row-{{.Entry.ID}}">
   {{if .Edit}}
     <td colspan="7">
-      <form hx-patch="/time-entries/{{.Entry.ID}}" hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML" class="row">
+      <form hx-patch="/time-entries/{{.Entry.ID}}" hx-target="#entry-row-{{.Entry.ID}}" hx-swap="outerHTML" class="row">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="field" style="margin-bottom:0;min-width:180px;flex:1">
           <label for="edit-proj-{{.Entry.ID}}" class="sr-only">Project</label>
@@ -29,7 +29,7 @@
           Billable
         </label>
         <button class="btn btn-primary" type="submit">Save</button>
-        <button type="button" class="btn" hx-get="/time-entries/{{.Entry.ID}}/row" hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML">Cancel</button>
+        <button type="button" class="btn" hx-get="/time-entries/{{.Entry.ID}}/row" hx-target="#entry-row-{{.Entry.ID}}" hx-swap="outerHTML">Cancel</button>
         {{if .ErrorCode}}
           {{template "tracking_error" (dict "ErrorCode" .ErrorCode "Message" .Error)}}
         {{else if .Error}}
@@ -51,8 +51,8 @@
     <td class="row" style="justify-content:flex-end">
       <button type="button" class="btn btn-ghost" data-focus-after-swap
               hx-get="/time-entries/{{.Entry.ID}}/edit"
-              hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML">Edit</button>
-      <form hx-delete="/time-entries/{{.Entry.ID}}" hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML"
+              hx-target="#entry-row-{{.Entry.ID}}" hx-swap="outerHTML">Edit</button>
+      <form hx-delete="/time-entries/{{.Entry.ID}}" hx-target="#entry-row-{{.Entry.ID}}" hx-swap="outerHTML"
             hx-confirm="Delete this entry? Reports will recompute without it." style="margin:0">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <button type="submit" class="btn btn-ghost btn-danger">Delete</button>
