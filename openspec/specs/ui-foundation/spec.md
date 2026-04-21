@@ -1,7 +1,17 @@
 # ui-foundation Specification
 
 ## Purpose
-TBD - created by archiving change establish-custom-component-library-foundation. Update Purpose after archive.
+The ui-foundation capability defines the design-system primitives every
+TimeTrak component is built on: a strict two-layer token taxonomy
+(private primitive ramps fronted by a bounded set of public semantic
+aliases), scale tokens for spacing, radius, type, and motion, a
+cascade-aware CSS layer order, and the component authoring contract
+that forbids primitive or raw values in component CSS. It also enforces
+the visible focus-indicator contract in both light and dark themes, the
+invariant that status is never conveyed by color alone, the
+deprecation-and-migration rule for evolving tokens, and the
+authoring-contract documentation that makes these rules reviewable at
+PR time.
 
 ## Requirements
 ### Requirement: Two-Layer Token Taxonomy

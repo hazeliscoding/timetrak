@@ -1,7 +1,14 @@
 # auth Specification
 
 ## Purpose
-TBD - created by archiving change bootstrap-timetrak-mvp. Update Purpose after archive.
+The auth capability governs how users prove identity to TimeTrak and how
+sessions are established, maintained, and revoked. It covers email and
+password registration (with transactional creation of a default personal
+workspace and owner membership), login and logout flows, secure session
+cookies, CSRF protection on mutating requests, and per-IP rate limiting
+on authentication endpoints. All authentication and signup UI MUST meet
+WCAG 2.2 AA, with visible labels, visible keyboard focus, and status
+that is never conveyed by color alone.
 ## Requirements
 ### Requirement: User registration with email and password
 

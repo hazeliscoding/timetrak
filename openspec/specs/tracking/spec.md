@@ -1,7 +1,16 @@
 # tracking Specification
 
 ## Purpose
-TBD - created by archiving change bootstrap-timetrak-mvp. Update Purpose after archive.
+The tracking capability governs the time-entry lifecycle: starting and
+stopping timers, creating manual entries, editing and deleting entries,
+and listing and filtering them. A database-level partial unique index
+enforces the single-active-timer-per-user-per-workspace invariant
+strictly within the caller's workspace, and concurrent start violations
+are surfaced through a typed integrity-error taxonomy and an accessible
+inline error partial. Every tracking handler performs exhaustive
+cross-workspace denial and logs integrity failures with structured
+fields. Tracking UI — timer widget, inline entry editor, entries list,
+and destructive confirmations — MUST meet WCAG 2.2 AA.
 ## Requirements
 ### Requirement: Start a timer
 

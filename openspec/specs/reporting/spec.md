@@ -1,7 +1,17 @@
 # reporting Specification
 
 ## Purpose
-TBD - created by archiving change bootstrap-timetrak-mvp. Update Purpose after archive.
+The reporting capability provides workspace-scoped read-only aggregations
+of time entries for the user interface. It covers date-range filtering
+with workspace-local day bucketing, totals by day, week, client, and
+project, billable vs non-billable breakdowns, estimated-billable grand
+totals per currency, the dashboard at-a-glance summary, and the HTMX
+filter partial. Reporting MUST NOT call rate resolution for closed
+entries: totals are computed exclusively from the per-entry rate
+snapshot, and completeness of those snapshots is enforced by a deploy
+gate. Every reporting handler performs exhaustive cross-workspace
+denial, every surface has a unified empty-state region with announced
+empty, loading, and error states, and the UI meets WCAG 2.2 AA.
 ## Requirements
 ### Requirement: Workspace-scoped reports
 

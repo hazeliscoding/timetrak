@@ -1,7 +1,17 @@
 # rates Specification
 
 ## Purpose
-TBD - created by archiving change bootstrap-timetrak-mvp. Update Purpose after archive.
+The rates capability is the single source of truth for billing rates and
+their resolution. It defines how `rate_rules` are stored (workspace,
+client, and project scope with `effective_from` / `effective_to` windows,
+non-overlapping at the same level, money as integer minor units), the
+centralized `Resolve` precedence (project → client → workspace default)
+that is called exactly once at entry close and save time to stamp an
+immutable per-entry rate snapshot, and the HTMX management surface with
+its `rates-changed` peer-refresh event and inline-edit focus behavior.
+Rate rules referenced by closed time entries are immutable on the
+historical axis, which is what keeps historical billable totals stable
+across retroactive edits. All rate management UI MUST meet WCAG 2.2 AA.
 ## Requirements
 ### Requirement: Rate rule storage with effective date windows
 

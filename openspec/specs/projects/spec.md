@@ -1,7 +1,14 @@
 # projects Specification
 
 ## Purpose
-TBD - created by archiving change bootstrap-timetrak-mvp. Update Purpose after archive.
+The projects capability governs workspace-scoped projects that hang under
+a client and act as the billable unit time entries attach to. It covers
+create, edit, archive and unarchive, the projects list, the workspace-
+and-client consistency invariant (a project's client MUST belong to the
+same workspace as the project), and exhaustive cross-workspace denial
+for every handler. Projects UI MUST meet WCAG 2.2 AA, present accessible
+table semantics, never rely on color alone for status, and use the
+documented confirmation pattern for destructive actions.
 ## Requirements
 ### Requirement: Create a project under a client
 

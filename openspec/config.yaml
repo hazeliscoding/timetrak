@@ -17,7 +17,7 @@ context: |
   - Workspace is the authorization boundary
   - Client -> Project -> Time Entry is the main domain hierarchy
   - Rates resolve by precedence: project, client, workspace default
-  - Accepted domains: auth, workspace, clients, projects, tracking, rates, reporting
+  - Accepted domains: auth, clients, projects, rates, reporting, tracking, ui-browser-tests, ui-foundation, ui-partials, ui-showcase, workspace
 
   Data conventions:
   - UUID primary keys
@@ -70,7 +70,7 @@ rules:
     - Write requirements with MUST or SHALL language.
     - Use GIVEN/WHEN/THEN scenarios.
     - Prefer one requirement per business capability.
-    - Organize specs by domain: auth, workspace, clients, projects, tracking, rates, reporting.
+    - Organize specs by domain: auth, clients, projects, rates, reporting, tracking, ui-browser-tests, ui-foundation, ui-partials, ui-showcase, workspace.
     - Include accessibility requirements when a feature introduces or changes user interaction.
     - Specify user-visible states clearly: empty, loading, success, validation error, and destructive actions.
 

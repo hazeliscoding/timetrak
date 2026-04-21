@@ -1,7 +1,18 @@
 # ui-browser-tests Specification
 
 ## Purpose
-TBD - created by archiving change add-browser-ui-contract-tests. Update Purpose after archive.
+The ui-browser-tests capability defines how TimeTrak exercises its
+browser-facing UI contracts through a Playwright harness gated behind
+the `browser` Go build tag. It covers the focus-ring contract in both
+themes, the reduced-motion contract, the `data-focus-after-swap`
+behavior documented in the partials README, token-to-computed-style
+fidelity read from live CSS, and a per-page axe-core smoke test. The
+harness reuses the existing server bootstrap and `internal/shared/testdb`
+fixtures rather than standing up parallel infrastructure, synchronizes
+on deterministic HTMX and DOM events rather than wall-clock sleeps, runs
+on a single pinned browser configuration in CI, and emits actionable
+artifacts on failure. `make test` and `go test ./...` MUST remain
+hermetic with respect to this harness.
 
 ## Requirements
 ### Requirement: Browser-driven test harness MUST be gated behind a build tag

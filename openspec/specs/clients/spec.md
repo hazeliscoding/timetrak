@@ -1,7 +1,14 @@
 # clients Specification
 
 ## Purpose
-TBD - created by archiving change bootstrap-timetrak-mvp. Update Purpose after archive.
+The clients capability governs workspace-scoped lifecycle management of
+the billable client entity: creation, editing, archival and unarchival,
+and the list view from which other domains (projects, entries, rates)
+hang. Every clients handler MUST enforce workspace membership and return
+HTTP 404 for cross-workspace access, verified by exhaustive per-handler
+denial tests. Every clients UI surface MUST meet WCAG 2.2 AA, present
+accessible table semantics, never convey status with color alone, and
+use the documented confirmation pattern for destructive actions.
 ## Requirements
 ### Requirement: Create a client in the active workspace
 

@@ -1,7 +1,17 @@
 # ui-showcase Specification
 
 ## Purpose
-TBD — materialized from change create-component-library-showcase-and-usage-docs; update after archive.
+The ui-showcase capability defines a dev-only `/dev/showcase` surface —
+mounted only when `APP_ENV=dev`, reachable by any authenticated session
+(workspace optional), and never linked from user-facing templates —
+that hosts TimeTrak's token and component catalogues. The catalogues
+cover every public semantic alias, scale token, and canonical partial,
+rendering real partials rather than re-implementations, colocating
+copy-ready snippets with live examples, documenting variant and state
+permutations, and cross-linking to source and specs. A contribution
+guide accompanies the catalogues, the showcase passes a WCAG 2.2 AA
+smoke on every page, and it MUST NOT introduce any new runtime
+dependency.
 
 ## Requirements
 ### Requirement: Dev-only showcase surface

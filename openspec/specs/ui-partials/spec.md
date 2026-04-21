@@ -1,7 +1,16 @@
 # ui-partials Specification
 
 ## Purpose
-TBD - created by archiving change create-reusable-ui-partials-and-patterns. Update Purpose after archive.
+The ui-partials capability defines how reusable template fragments are
+authored, invoked, and documented in TimeTrak. It fixes the canonical
+location and naming (`web/templates/partials/<name>.html` with block
+name `partials/<name>`), the slot-and-context convention using the
+`dict` template func, the HTMX event-name contract for peer-refresh
+events, row partial conventions for out-of-band swaps, focus management
+after HTMX swaps, and the documented set of canonical partials (form
+field, error summary, table shell, empty state, flash, spinner,
+pagination, filter bar). Each canonical partial carries per-partial
+accessibility obligations enumerated in `web/templates/partials/README.md`.
 ## Requirements
 ### Requirement: Canonical partial location and naming
 
