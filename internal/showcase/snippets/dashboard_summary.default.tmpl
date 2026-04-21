@@ -1,0 +1,5 @@
+{{template "dashboard_summary" .Summary}}
+{{/* Context: .Summary has TodayTotalSeconds, TodayBillableSeconds,
+     TodayNonBillableSeconds, WeekTotalSeconds, WeekBillableSeconds,
+     WeekNonBillableSeconds, WeekEstimatedBillable (map[string]int64),
+     EntriesWithoutRate. */}}

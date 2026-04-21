@@ -1,0 +1,6 @@
+{{template "rate_form" (dict
+  "Form"      .Form  {{/* Form.Error = "Hourly rate must be greater than zero." */}}
+  "Clients"   .Clients
+  "Projects"  .Projects
+  "CSRFToken" .CSRFToken
+  "OOB"       false)}}

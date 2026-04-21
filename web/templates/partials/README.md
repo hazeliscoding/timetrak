@@ -1,5 +1,9 @@
 # Partials Catalogue
 
+**Browser-visible reference:** `/dev/showcase/components` (dev-only) renders
+every partial live against documented `dict` payloads, with copy-ready
+snippets. See `internal/showcase/` for the catalogue definition.
+
 This directory holds TimeTrak's reusable `html/template` partials. Every page
 template is parsed together with every layout and every partial in this
 directory (see `internal/shared/templates`), so a partial defined here is

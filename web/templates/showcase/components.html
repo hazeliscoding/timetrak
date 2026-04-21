@@ -1,0 +1,89 @@
+{{define "title"}}Components · Showcase · TimeTrak (dev){{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <header>
+    <h1>Components catalogue</h1>
+    <p class="muted">
+      Every reusable partial under <code>web/templates/partials/</code>,
+      rendered live through the real template loader. Copy-ready snippets
+      are colocated fixtures in <code>internal/showcase/snippets/</code>.
+      See <a href="/dev/showcase">showcase index</a> for contributor guidance.
+    </p>
+  </header>
+
+  <nav class="card" aria-labelledby="components-toc-title">
+    <h2 id="components-toc-title" class="mt-0">On this page</h2>
+    <ul style="columns:2;list-style:none;padding:0;margin:0">
+      {{range .Entries}}
+        <li><a href="#entry-{{.ID}}"><code>{{.Name}}</code></a></li>
+      {{end}}
+    </ul>
+  </nav>
+
+  {{range $entry := .Entries}}
+    <section class="card" id="entry-{{$entry.ID}}" aria-labelledby="entry-{{$entry.ID}}-title">
+      <h2 id="entry-{{$entry.ID}}-title" class="mt-0"><code>{{$entry.Name}}</code></h2>
+      <p>{{.Purpose}}</p>
+      <p class="muted">
+        Source: <code>{{.SourcePath}}</code>
+        · Spec: <code>{{.SpecRef}}</code>
+      </p>
+
+      {{if .DictKeys}}
+        <details>
+          <summary>Context keys ({{len .DictKeys}})</summary>
+          <table class="table" aria-label="Dict keys for {{.Name}}">
+            <caption class="sr-only">Dict keys for {{.Name}}</caption>
+            <thead>
+              <tr>
+                <th scope="col">Key</th>
+                <th scope="col">Required</th>
+                <th scope="col">Default</th>
+                <th scope="col">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .DictKeys}}
+                <tr>
+                  <td><code>{{.Name}}</code></td>
+                  <td>{{if .Required}}<span class="badge">required</span>{{else}}<span class="muted">optional</span>{{end}}</td>
+                  <td>{{if .Default}}<code>{{.Default}}</code>{{else}}<span class="muted">—</span>{{end}}</td>
+                  <td>{{.Note}}</td>
+                </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </details>
+      {{end}}
+
+      {{if .A11yNotes}}
+        <details>
+          <summary>Accessibility notes</summary>
+          <ul>
+            {{range .A11yNotes}}<li>{{.}}</li>{{end}}
+          </ul>
+        </details>
+      {{end}}
+
+      {{range $ex := $entry.RenderedExamples}}
+        <section id="entry-{{$entry.ID}}-example-{{$ex.ID}}" class="stack" aria-labelledby="entry-{{$entry.ID}}-example-{{$ex.ID}}-title" style="margin-top:var(--space-5)">
+          <h3 id="entry-{{$entry.ID}}-example-{{$ex.ID}}-title" style="font-size:1rem">{{$ex.Label}}</h3>
+          <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)">
+            {{.HTML}}
+          </div>
+          <details>
+            <summary>Copy-ready snippet</summary>
+            <pre><code>{{.Snippet}}</code></pre>
+          </details>
+        </section>
+      {{end}}
+    </section>
+  {{end}}
+
+  <p>
+    <a href="/dev/showcase">Back to showcase index</a> ·
+    <a href="/dev/showcase/tokens">Tokens catalogue</a>
+  </p>
+</section>
+{{end}}

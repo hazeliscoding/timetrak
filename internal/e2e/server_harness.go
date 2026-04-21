@@ -29,6 +29,7 @@ import (
 	"timetrak/internal/shared/session"
 	"timetrak/internal/shared/templates"
 	"timetrak/internal/shared/testdb"
+	"timetrak/internal/showcase"
 	"timetrak/internal/tracking"
 	"timetrak/internal/web/layout"
 	"timetrak/internal/workspace"
@@ -82,6 +83,12 @@ func BuildServer(t *testing.T) *httptest.Server {
 	rates.NewHandler(ratesSvc, clientsSvc, projectsSvc, tpls, lay).Register(mux, protect)
 	tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, tpls, lay).Register(mux, protect)
 	reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, wsSvc, tpls, lay).Register(mux, protect)
+
+	// Showcase is mounted in the test server so browser contract tests
+	// can exercise /dev/showcase. We pass "dev" explicitly — this
+	// bootstrap mirrors cmd/web with the single difference that
+	// configuration is hard-coded test-only values.
+	showcase.NewHandler(tpls, lay, "dev").Register(mux)
 
 	var handler http.Handler = mux
 	handler = csrf.Middleware(secret, false)(handler)

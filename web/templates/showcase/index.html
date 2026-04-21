@@ -1,0 +1,73 @@
+{{define "title"}}Showcase · TimeTrak (dev){{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <h1>Component + token showcase</h1>
+  <p class="muted">
+    Dev-only reference surface for TimeTrak's reusable partials and design tokens.
+    Rendered by the same template loader that serves the product; mismatches
+    between a partial's dict contract and a catalogue example fail here in dev.
+  </p>
+
+  <nav class="card" aria-label="Showcase sections">
+    <h2 class="mt-0">Browse</h2>
+    <ul class="nav" style="padding:0;margin:0;display:flex;gap:var(--space-4);flex-wrap:wrap;list-style:none">
+      <li><a href="/dev/showcase/tokens">Tokens catalogue</a> — {{len .TokenEntries}} entries</li>
+      <li><a href="/dev/showcase/components">Components catalogue</a> — {{len .ComponentEntries}} entries</li>
+    </ul>
+  </nav>
+
+  <section class="card" aria-labelledby="contrib-guide-title">
+    <h2 id="contrib-guide-title" class="mt-0">Contribution guide</h2>
+    <p>
+      The showcase is kept honest by two tests in <code>internal/showcase/</code>:
+    </p>
+    <ul>
+      <li>
+        <strong>Partial coverage</strong> — <code>TestComponentCatalogueCoverage</code>
+        enumerates every <code>.html</code> file under
+        <code>web/templates/partials/</code> and asserts each non-grandfathered
+        stem appears exactly once as a <code>ComponentEntry.PartialName</code>.
+      </li>
+      <li>
+        <strong>Snippet integrity</strong> — <code>TestSnippetIntegrity</code>
+        asserts every <code>ComponentEntry.PartialName</code> and
+        <code>Example.PartialName</code> resolves against the live template loader.
+      </li>
+    </ul>
+    <h3>Adding a new component entry</h3>
+    <ol>
+      <li>Add the partial under <code>web/templates/partials/&lt;name&gt;.html</code>
+        following the authoring contract in
+        <code>web/templates/partials/README.md</code>.</li>
+      <li>Append a <code>ComponentEntry</code> to <code>ComponentEntries</code>
+        in <code>internal/showcase/catalogue.go</code>. Populate
+        <code>PartialName</code>, <code>SourcePath</code>, <code>SpecRef</code>,
+        <code>Purpose</code>, <code>DictKeys</code>, at least one
+        <code>Example</code>, and <code>A11yNotes</code>.</li>
+      <li>Create a snippet fixture at
+        <code>internal/showcase/snippets/&lt;SnippetID&gt;.tmpl</code> containing
+        the copy-ready <code>{{"{{template"}} &quot;&lt;name&gt;&quot; (dict ...){{"}}"}}</code> call.</li>
+      <li>Run <code>make test</code>. Coverage + snippet-integrity tests catch
+        any gap.</li>
+    </ol>
+    <h3>Adding a new token entry</h3>
+    <ol>
+      <li>Propose the token via a foundation change; new tokens are NEVER added in
+        the showcase alone.</li>
+      <li>Once the token lands in <code>web/static/css/tokens.css</code>, append
+        a <code>TokenEntry</code> to <code>TokenEntries</code> with the right
+        <code>Family</code> (<code>semantic-color</code> | <code>primitive-ramp</code>
+        | <code>spacing</code> | <code>radius</code> | <code>typography</code> |
+        <code>motion</code> | <code>elevation</code> | <code>z-index</code> |
+        <code>breakpoint</code>) and <code>Preview</code> shape.</li>
+    </ol>
+    <p class="muted">
+      Cross-links:
+      <a href="/static/css/README.md" hx-boost="false">CSS authoring contract</a>,
+      <a href="https://github.com/" hx-boost="false">openspec/specs/ui-foundation/spec.md</a>,
+      <a href="https://github.com/" hx-boost="false">openspec/specs/ui-partials/spec.md</a>.
+    </p>
+  </section>
+</section>
+{{end}}

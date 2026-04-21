@@ -1,5 +1,9 @@
 # CSS Authoring Contract
 
+**Browser-visible reference:** `/dev/showcase/tokens` (dev-only) renders every
+semantic alias, scale token, and primitive ramp with live previews under the
+current theme. See `internal/showcase/` for the catalogue definition.
+
 This is the authoring contract for TimeTrak's stylesheet. It governs
 `web/static/css/tokens.css` and `web/static/css/app.css` — the only two
 stylesheet entry points in the app.

@@ -1,0 +1,9 @@
+{{template "confirm_dialog" (dict
+  "ID"           "archive-client-confirm"
+  "Title"        "Archive client?"
+  "Message"      "This client has 3 active projects. Archiving preserves time entries; projects become read-only."
+  "Method"       "post"
+  "Action"       "/clients/{{.Client.ID}}/archive"
+  "Target"       "#client-row-{{.Client.ID}}"
+  "Swap"         "outerHTML"
+  "ConfirmLabel" "Archive client")}}

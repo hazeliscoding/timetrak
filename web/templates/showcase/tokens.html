@@ -1,0 +1,129 @@
+{{define "title"}}Tokens · Showcase · TimeTrak (dev){{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <header>
+    <h1>Tokens catalogue</h1>
+    <p class="muted">
+      Every design token declared in <code>web/static/css/tokens.css</code>.
+      Samples use <code>var(--&lt;token&gt;)</code> so the existing
+      <code>data-theme</code> toggle updates previews in place.
+      See <a href="/dev/showcase">showcase index</a> for the authoring
+      contract.
+    </p>
+  </header>
+
+  <section class="card" aria-labelledby="semantic-title">
+    <h2 id="semantic-title" class="mt-0">Semantic aliases</h2>
+    <p class="muted">The public color surface. Components MUST consume only these (plus scale tokens below).</p>
+    <table class="table" aria-label="Semantic color tokens">
+      <caption class="sr-only">Semantic color aliases</caption>
+      <thead>
+        <tr>
+          <th scope="col">Sample</th>
+          <th scope="col">Token</th>
+          <th scope="col">Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .SemanticColors}}
+          {{template "showcase_token_row" .}}
+        {{end}}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card" aria-labelledby="scale-title">
+    <h2 id="scale-title" class="mt-0">Scale tokens</h2>
+    <p class="muted">Spacing, radius, typography, motion, elevation, z-index, and breakpoints. Components MUST consume these instead of raw numeric values.</p>
+    <table class="table" aria-label="Scale tokens">
+      <caption class="sr-only">Scale tokens by family</caption>
+      <thead>
+        <tr>
+          <th scope="col">Sample</th>
+          <th scope="col">Token</th>
+          <th scope="col">Family</th>
+          <th scope="col">Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .ScaleTokens}}
+          <tr id="token-{{.ID}}">
+            <td>{{template "showcase_token_preview" .}}</td>
+            <td><code>{{.Name}}</code></td>
+            <td><span class="muted">{{.Family}}</span></td>
+            <td>{{.Role}}</td>
+          </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card" aria-labelledby="primitive-title">
+    <h2 id="primitive-title" class="mt-0">Primitive ramps</h2>
+    <div class="flash flash-warn" role="status" aria-live="polite">
+      <strong>Reference only.</strong> Primitive ramps are palette anchors.
+      Components MUST NOT consume them directly — use a semantic alias or
+      propose a new one via a foundation change.
+    </div>
+    <table class="table" aria-label="Primitive ramp tokens">
+      <caption class="sr-only">Primitive ramp tokens (not for component consumption)</caption>
+      <thead>
+        <tr>
+          <th scope="col">Sample</th>
+          <th scope="col">Token</th>
+          <th scope="col">Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .PrimitiveRamps}}
+          {{template "showcase_token_row" .}}
+        {{end}}
+      </tbody>
+    </table>
+  </section>
+
+  <p>
+    <a href="/dev/showcase">Back to showcase index</a> ·
+    <a href="/dev/showcase/components">Components catalogue</a>
+  </p>
+</section>
+{{end}}
+
+{{define "showcase_token_row"}}
+<tr id="token-{{.ID}}">
+  <td>{{template "showcase_token_preview" .}}</td>
+  <td><code>{{.Name}}</code></td>
+  <td>{{.Role}}</td>
+</tr>
+{{end}}
+
+{{define "showcase_token_preview"}}
+  {{if eq .Preview "swatch"}}
+    <span aria-label="{{.Name}} swatch"
+          style="display:inline-block;width:3rem;height:1.5rem;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:{{cssVar .Name}}"></span>
+  {{else if eq .Preview "sample-text"}}
+    <span style="color:{{cssVar .Name}};{{if eq .Name "--font-sans"}}font-family:var(--font-sans){{else if eq .Name "--font-mono"}}font-family:var(--font-mono){{end}}">Sample text {{.Name}}</span>
+  {{else if eq .Preview "sizing-bar"}}
+    <span aria-label="{{.Name}} size"
+          style="display:inline-block;height:1rem;background:var(--color-accent-soft);border:1px solid var(--color-border);width:{{cssVar .Name}}"></span>
+    <span class="muted" style="margin-left:var(--space-2);font-family:var(--font-mono)">{{.Name}}</span>
+  {{else if eq .Preview "radius"}}
+    <span aria-label="{{.Name}} radius"
+          style="display:inline-block;width:3rem;height:1.5rem;background:var(--color-surface-alt);border:1px solid var(--color-border);border-radius:{{cssVar .Name}}"></span>
+  {{else if eq .Preview "motion-demo"}}
+    <span aria-label="{{.Name}} motion"
+          class="showcase-motion-demo"
+          data-token="{{.Name}}"
+          style="display:inline-block;width:1.5rem;height:1.5rem;background:var(--color-accent);border-radius:var(--radius-sm);transition:transform {{cssVar .Name}} var(--motion-easing-standard)"></span>
+  {{else if eq .Preview "shadow"}}
+    <span aria-label="{{.Name}} shadow"
+          style="display:inline-block;width:3rem;height:1.5rem;background:var(--color-surface);border:1px solid var(--color-border);box-shadow:{{cssVar .Name}}"></span>
+  {{else if eq .Preview "z"}}
+    <span class="muted" aria-label="{{.Name}} z-index" style="font-family:var(--font-mono)">z:{{.Name}}</span>
+  {{else if eq .Preview "breakpoint"}}
+    <span class="muted" aria-label="{{.Name}} breakpoint" style="font-family:var(--font-mono)">{{.Name}}</span>
+  {{else}}
+    <span class="muted">{{.Name}}</span>
+  {{end}}
+{{end}}

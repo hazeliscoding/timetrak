@@ -29,6 +29,7 @@ import (
 	"timetrak/internal/shared/logging"
 	"timetrak/internal/shared/session"
 	"timetrak/internal/shared/templates"
+	"timetrak/internal/showcase"
 	"timetrak/internal/tracking"
 	"timetrak/internal/web/layout"
 	"timetrak/internal/workspace"
@@ -145,6 +146,15 @@ func main() {
 	trackingHandler.SetLogger(logger)
 	reportsHandler := reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, wsSvc, tpls, layoutBuilder)
 
+	// Dev-only showcase handler. Only constructed + registered when
+	// APP_ENV=dev — see showcase.IsDev for the definition. The handler
+	// also re-checks APP_ENV at request time (belt-and-suspenders), so
+	// even if registration regresses the route denies with 404 outside dev.
+	var showcaseHandler *showcase.Handler
+	if showcase.IsDev(cfg.appEnv) {
+		showcaseHandler = showcase.NewHandler(tpls, layoutBuilder, cfg.appEnv)
+	}
+
 	mux := http.NewServeMux()
 
 	// Static assets (no auth).
@@ -184,6 +194,13 @@ func main() {
 	ratesHandler.Register(mux, protect)
 	trackingHandler.Register(mux, protect)
 	reportsHandler.Register(mux, protect)
+
+	// Showcase registers ONLY in dev; see showcase.IsDev. It sits behind
+	// authz.RequireAuth alone (no workspace requirement) — the single
+	// authenticated-without-workspace surface in the app.
+	if showcaseHandler != nil {
+		showcaseHandler.Register(mux)
+	}
 
 	// Build middleware chain (outermost first):
 	//   Recover → RequestID → Logging → SessionLoader → CSRF → routes

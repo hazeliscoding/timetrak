@@ -236,5 +236,8 @@ func baseFuncs() template.FuncMap {
 		},
 		"add": func(a, b int) int { return a + b },
 		"sub": func(a, b int) int { return a - b },
+		"cssVar": func(name string) template.CSS {
+			return template.CSS("var(" + name + ")")
+		},
 	}
 }
