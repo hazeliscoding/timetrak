@@ -1,33 +1,139 @@
-/* TimeTrak design tokens. Source: docs/time_trak_mvp_ui_style_guide.md */
+/*
+ * TimeTrak design tokens.
+ *
+ * Two-layer model (see openspec/specs/ui-foundation/spec.md and
+ * web/static/css/README.md):
+ *
+ *   1. Primitive ramps — palette anchors. Private to the foundation.
+ *      Components MUST NOT reference these directly.
+ *   2. Semantic aliases — the public token surface. Components MUST
+ *      reference only these (plus the scale tokens below).
+ *
+ * Legacy names (--surface, --text, --accent, --focus, ...) are kept as
+ * deprecation aliases that resolve to the new --color-* semantic layer.
+ * They will be removed in the next foundation change.
+ */
 
 :root {
   color-scheme: light;
 
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-alt: #f1f3f6;
+  /* -------------------------------------------------------------- */
+  /* PRIMITIVE RAMPS — do not consume from component CSS.           */
+  /* -------------------------------------------------------------- */
 
-  --text: #171a1f;
-  --text-muted: #596273;
+  /* Neutral ramp (surface / text / border). */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f6f7f9;
+  --neutral-100: #f1f3f6;
+  --neutral-200: #e4e8ee;
+  --neutral-300: #c7cfdb;
+  --neutral-400: #9aa6b2;
+  --neutral-500: #7a8594;
+  --neutral-600: #596273;
+  --neutral-700: #3d4452;
+  --neutral-800: #242932;
+  --neutral-900: #171a1f;
 
-  --border: #c7cfdb;
-  --border-strong: #9aa6b2;
+  /* Accent ramp (brand blue). */
+  --accent-50:  #eff5ff;
+  --accent-100: #dbeafe;
+  --accent-200: #bfd7fe;
+  --accent-300: #93b8fc;
+  --accent-400: #6094f8;
+  --accent-500: #2563eb;
+  --accent-600: #1d4ed8;
+  --accent-700: #1e40af;
+  --accent-800: #1e3a8a;
+  --accent-900: #172554;
 
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --accent-soft: #dbeafe;
+  /* Severity anchors (at least 500-weight per hue). */
+  --red-500:   #b42318;
+  --red-600:   #912018;
+  --red-soft:  #fee4e2;
 
-  --success: #157347;
-  --success-soft: #d1fadf;
+  --amber-500: #b45309;
+  --amber-600: #92400e;
+  --amber-soft:#fef0c7;
 
-  --warning: #b45309;
-  --warning-soft: #fef0c7;
+  --green-500: #157347;
+  --green-600: #0f5132;
+  --green-soft:#d1fadf;
 
-  --danger: #b42318;
-  --danger-soft: #fee4e2;
+  /* -------------------------------------------------------------- */
+  /* SEMANTIC ALIASES — the public token surface for components.    */
+  /* Contrast roles documented inline (target: WCAG 2.2 AA).        */
+  /* -------------------------------------------------------------- */
 
-  --focus: #1d4ed8;
+  /* Surfaces. */
+  --color-bg:            var(--neutral-50);   /* page background */
+  --color-surface:       var(--neutral-0);    /* cards, tables, inputs */
+  --color-surface-alt:   var(--neutral-100);  /* table headers, hover rows */
 
+  /* Text. --color-text on surfaces targets >=4.5:1; --color-text-muted
+     targets >=4.5:1 for body copy on --color-surface. */
+  --color-text:          var(--neutral-900);
+  --color-text-muted:    var(--neutral-600);
+
+  /* Borders. Non-text contrast target >=3:1 vs surfaces. */
+  --color-border:        var(--neutral-300);
+  --color-border-strong: var(--neutral-400);
+
+  /* Accent. --color-accent is a non-text/UI signal on surfaces (>=3:1).
+     Text on --color-accent is white (#fff) and targets >=4.5:1. */
+  --color-accent:        var(--accent-500);
+  --color-accent-hover:  var(--accent-600);
+  --color-accent-soft:   var(--accent-100);
+
+  /* Focus ring. Target >=3:1 against every surface it can appear on,
+     including --color-surface, --color-surface-alt, --color-bg, and
+     --color-accent. Single token — do not add per-variant focus tokens. */
+  --color-focus:         var(--accent-600);
+
+  /* Severity pairs. The solid tone is used for text/icon/border; the
+     -soft tone is used as the fill behind it. Color is never the sole
+     signal — see the "status never conveyed by colour alone" rule. */
+  --color-success:       var(--green-500);
+  --color-success-soft:  var(--green-soft);
+
+  --color-warning:       var(--amber-500);
+  --color-warning-soft:  var(--amber-soft);
+
+  --color-danger:        var(--red-500);
+  --color-danger-soft:   var(--red-soft);
+
+  --color-info:          var(--accent-500);
+  --color-info-soft:     var(--accent-100);
+
+  /* -------------------------------------------------------------- */
+  /* LEGACY ALIASES — deprecated, remove next foundation change.    */
+  /* Kept so any uncaught partial or inline style still resolves.   */
+  /* -------------------------------------------------------------- */
+
+  --bg:             var(--color-bg);              /* deprecated: use --color-bg */
+  --surface:        var(--color-surface);         /* deprecated: use --color-surface */
+  --surface-alt:    var(--color-surface-alt);     /* deprecated: use --color-surface-alt */
+  --text:           var(--color-text);            /* deprecated: use --color-text */
+  --text-muted:     var(--color-text-muted);      /* deprecated: use --color-text-muted */
+  --border:         var(--color-border);          /* deprecated: use --color-border */
+  --border-strong:  var(--color-border-strong);   /* deprecated: use --color-border-strong */
+  --accent:         var(--color-accent);          /* deprecated: use --color-accent */
+  --accent-hover:   var(--color-accent-hover);    /* deprecated: use --color-accent-hover */
+  --accent-soft:    var(--color-accent-soft);     /* deprecated: use --color-accent-soft */
+  --focus:          var(--color-focus);           /* deprecated: use --color-focus */
+  --success:        var(--color-success);         /* deprecated: use --color-success */
+  --success-soft:   var(--color-success-soft);    /* deprecated: use --color-success-soft */
+  --warning:        var(--color-warning);         /* deprecated: use --color-warning */
+  --warning-soft:   var(--color-warning-soft);    /* deprecated: use --color-warning-soft */
+  --danger:         var(--color-danger);          /* deprecated: use --color-danger */
+  --danger-soft:    var(--color-danger-soft);     /* deprecated: use --color-danger-soft */
+
+  /* -------------------------------------------------------------- */
+  /* SCALE TOKENS — spacing, radius, typography, motion, elevation, */
+  /* z-index, breakpoints. Components MUST consume these instead of */
+  /* raw numeric values.                                            */
+  /* -------------------------------------------------------------- */
+
+  /* Spacing (8px-based, with a 4px base step). */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -37,62 +143,202 @@
   --space-7: 40px;
   --space-8: 48px;
 
+  /* Radius. */
   --radius-sm: 8px;
   --radius-md: 12px;
 
+  /* Typography. Static scale — no clamp-based fluid sizes. */
   --font-sans: Inter, "Helvetica Neue", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Motion. Components MUST collapse to instant under prefers-reduced-motion. */
+  --motion-duration-fast:   120ms;
+  --motion-duration-normal: 200ms;
+  --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Elevation. Borders-first per CLAUDE.md; shadows used sparingly. */
+  --shadow-none: none;
+  --shadow-sm:   0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-md:   0 4px 8px rgb(0 0 0 / 0.08);
+
+  /* Z-index layers. Raw z-index integers are prohibited in component CSS. */
+  --z-base:     0;
+  --z-sticky:   10;
+  --z-dropdown: 100;
+  --z-modal:    1000;
+  --z-toast:    1100;
+
+  /* Breakpoints. For reference in media queries. */
+  --bp-sm: 640px;
+  --bp-md: 960px;
+  --bp-lg: 1280px;
 }
 
+/* Explicit dark theme override. */
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #0f1115;
-  --surface: #161a21;
-  --surface-alt: #1c2129;
+  /* Neutral ramp (dark). */
+  --neutral-0:   #0f1115;
+  --neutral-50:  #11151b;
+  --neutral-100: #161a21;
+  --neutral-200: #1c2129;
+  --neutral-300: #2a313c;
+  --neutral-400: #3a4251;
+  --neutral-500: #5a6472;
+  --neutral-600: #9aa6b2;
+  --neutral-700: #b8c1cc;
+  --neutral-800: #d4dae2;
+  --neutral-900: #e8ecf2;
 
-  --text: #e8ecf2;
-  --text-muted: #9aa6b2;
+  /* Accent ramp (dark). */
+  --accent-50:  #1d2a44;
+  --accent-100: #1d2a44;
+  --accent-200: #24355b;
+  --accent-300: #2f4c82;
+  --accent-400: #3d6cbd;
+  --accent-500: #4b8bf5;
+  --accent-600: #6ca1ff;
+  --accent-700: #8ab6ff;
+  --accent-800: #b0ccff;
+  --accent-900: #dbe7ff;
 
-  --border: #2a313c;
-  --border-strong: #3a4251;
+  --red-500:   #f87171;
+  --red-600:   #ef4444;
+  --red-soft:  #2a1515;
 
-  --accent: #4b8bf5;
-  --accent-hover: #6ca1ff;
-  --accent-soft: #1d2a44;
+  --amber-500: #f59e0b;
+  --amber-600: #d97706;
+  --amber-soft:#2a1f0f;
 
-  --success: #34d399;
-  --success-soft: #0f2a1f;
+  --green-500: #34d399;
+  --green-600: #10b981;
+  --green-soft:#0f2a1f;
 
-  --warning: #f59e0b;
-  --warning-soft: #2a1f0f;
+  /* Semantic aliases (dark). */
+  --color-bg:            var(--neutral-0);
+  --color-surface:       var(--neutral-100);
+  --color-surface-alt:   var(--neutral-200);
+  --color-text:          var(--neutral-900);
+  --color-text-muted:    var(--neutral-600);
+  --color-border:        var(--neutral-300);
+  --color-border-strong: var(--neutral-400);
 
-  --danger: #f87171;
-  --danger-soft: #2a1515;
+  --color-accent:        var(--accent-500);
+  --color-accent-hover:  var(--accent-600);
+  --color-accent-soft:   var(--accent-100);
 
-  --focus: #6ca1ff;
+  --color-focus:         var(--accent-600);
+
+  --color-success:       var(--green-500);
+  --color-success-soft:  var(--green-soft);
+  --color-warning:       var(--amber-500);
+  --color-warning-soft:  var(--amber-soft);
+  --color-danger:        var(--red-500);
+  --color-danger-soft:   var(--red-soft);
+  --color-info:          var(--accent-500);
+  --color-info-soft:     var(--accent-100);
+
+  /* Legacy aliases (dark) — deprecated, remove next foundation change. */
+  --bg:             var(--color-bg);
+  --surface:        var(--color-surface);
+  --surface-alt:    var(--color-surface-alt);
+  --text:           var(--color-text);
+  --text-muted:     var(--color-text-muted);
+  --border:         var(--color-border);
+  --border-strong:  var(--color-border-strong);
+  --accent:         var(--color-accent);
+  --accent-hover:   var(--color-accent-hover);
+  --accent-soft:    var(--color-accent-soft);
+  --focus:          var(--color-focus);
+  --success:        var(--color-success);
+  --success-soft:   var(--color-success-soft);
+  --warning:        var(--color-warning);
+  --warning-soft:   var(--color-warning-soft);
+  --danger:         var(--color-danger);
+  --danger-soft:    var(--color-danger-soft);
 }
 
-/* System preference when data-theme="system". */
+/* System preference when data-theme="system": mirror the dark ramp + aliases. */
 @media (prefers-color-scheme: dark) {
   [data-theme="system"] {
     color-scheme: dark;
-    --bg: #0f1115;
-    --surface: #161a21;
-    --surface-alt: #1c2129;
-    --text: #e8ecf2;
-    --text-muted: #9aa6b2;
-    --border: #2a313c;
-    --border-strong: #3a4251;
-    --accent: #4b8bf5;
-    --accent-hover: #6ca1ff;
-    --accent-soft: #1d2a44;
-    --success: #34d399;
-    --success-soft: #0f2a1f;
-    --warning: #f59e0b;
-    --warning-soft: #2a1f0f;
-    --danger: #f87171;
-    --danger-soft: #2a1515;
-    --focus: #6ca1ff;
+
+    --neutral-0:   #0f1115;
+    --neutral-50:  #11151b;
+    --neutral-100: #161a21;
+    --neutral-200: #1c2129;
+    --neutral-300: #2a313c;
+    --neutral-400: #3a4251;
+    --neutral-500: #5a6472;
+    --neutral-600: #9aa6b2;
+    --neutral-700: #b8c1cc;
+    --neutral-800: #d4dae2;
+    --neutral-900: #e8ecf2;
+
+    --accent-50:  #1d2a44;
+    --accent-100: #1d2a44;
+    --accent-200: #24355b;
+    --accent-300: #2f4c82;
+    --accent-400: #3d6cbd;
+    --accent-500: #4b8bf5;
+    --accent-600: #6ca1ff;
+    --accent-700: #8ab6ff;
+    --accent-800: #b0ccff;
+    --accent-900: #dbe7ff;
+
+    --red-500:   #f87171;
+    --red-600:   #ef4444;
+    --red-soft:  #2a1515;
+
+    --amber-500: #f59e0b;
+    --amber-600: #d97706;
+    --amber-soft:#2a1f0f;
+
+    --green-500: #34d399;
+    --green-600: #10b981;
+    --green-soft:#0f2a1f;
+
+    --color-bg:            var(--neutral-0);
+    --color-surface:       var(--neutral-100);
+    --color-surface-alt:   var(--neutral-200);
+    --color-text:          var(--neutral-900);
+    --color-text-muted:    var(--neutral-600);
+    --color-border:        var(--neutral-300);
+    --color-border-strong: var(--neutral-400);
+
+    --color-accent:        var(--accent-500);
+    --color-accent-hover:  var(--accent-600);
+    --color-accent-soft:   var(--accent-100);
+
+    --color-focus:         var(--accent-600);
+
+    --color-success:       var(--green-500);
+    --color-success-soft:  var(--green-soft);
+    --color-warning:       var(--amber-500);
+    --color-warning-soft:  var(--amber-soft);
+    --color-danger:        var(--red-500);
+    --color-danger-soft:   var(--red-soft);
+    --color-info:          var(--accent-500);
+    --color-info-soft:     var(--accent-100);
+
+    /* Legacy aliases (system-dark) — deprecated. */
+    --bg:             var(--color-bg);
+    --surface:        var(--color-surface);
+    --surface-alt:    var(--color-surface-alt);
+    --text:           var(--color-text);
+    --text-muted:     var(--color-text-muted);
+    --border:         var(--color-border);
+    --border-strong:  var(--color-border-strong);
+    --accent:         var(--color-accent);
+    --accent-hover:   var(--color-accent-hover);
+    --accent-soft:    var(--color-accent-soft);
+    --focus:          var(--color-focus);
+    --success:        var(--color-success);
+    --success-soft:   var(--color-success-soft);
+    --warning:        var(--color-warning);
+    --warning-soft:   var(--color-warning-soft);
+    --danger:         var(--color-danger);
+    --danger-soft:    var(--color-danger-soft);
   }
 }
