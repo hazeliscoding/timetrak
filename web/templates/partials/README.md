@@ -5,6 +5,11 @@ template is parsed together with every layout and every partial in this
 directory (see `internal/shared/templates`), so a partial defined here is
 callable from any page.
 
+**Sibling doc.** CSS authoring conventions (token taxonomy, `@layer`
+order, `tt-<component>` naming, focus / target-size / status rules)
+live in [`web/static/css/README.md`](../../static/css/README.md). When
+adding a partial that ships new CSS, follow that contract.
+
 ## Conventions
 
 ### File and block naming
@@ -56,6 +61,15 @@ rates table refresh) MUST NOT carry the attribute.
 **Form-error rule:** when a form partial re-renders with validation errors,
 the error summary (or the first invalid control) MUST carry
 `data-focus-after-swap` so keyboard and screen-reader users land on the error.
+
+**Contract test.** The `data-focus-after-swap` contract is enforced by
+`internal/e2e/browser/focus_after_swap_test.go` (gated by
+`//go:build browser`; run via `make test-browser`). When you add a new
+HTMX-focus target to a partial, add a matching scenario to that test —
+the convention is: every documented intent swap MUST leave
+`document.activeElement` carrying `[data-focus-after-swap]` after
+`htmx:afterSettle`. If you change a documented target, update both this
+README and the scenario.
 
 ### Row OOB swap convention
 

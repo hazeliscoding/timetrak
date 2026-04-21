@@ -9,107 +9,13 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
-	"timetrak/internal/auth"
-	"timetrak/internal/clients"
-	"timetrak/internal/projects"
-	"timetrak/internal/rates"
-	"timetrak/internal/reporting"
-	"timetrak/internal/shared/authz"
-	"timetrak/internal/shared/clock"
-	"timetrak/internal/shared/csrf"
-	sharedhttp "timetrak/internal/shared/http"
-	"timetrak/internal/shared/logging"
-	"timetrak/internal/shared/session"
-	"timetrak/internal/shared/templates"
-	"timetrak/internal/shared/testdb"
-	"timetrak/internal/tracking"
-	"timetrak/internal/web/layout"
-	"timetrak/internal/workspace"
+	"timetrak/internal/e2e"
 )
-
-func buildServer(t *testing.T) *httptest.Server {
-	t.Helper()
-	pool := testdb.Open(t)
-
-	// Session + CSRF need a secret.
-	secret := []byte("0123456789abcdef0123456789abcdef") // 32 bytes, test-only.
-	store, err := session.NewStore(pool.Pool, secret, false)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Resolve templates dir from module root. Tests run with $CWD = the test file's package dir,
-	// so walk up until we find web/templates.
-	tmplDir := findTemplatesDir(t)
-	root := os.DirFS(tmplDir)
-	tpls, err := templates.Load(root)
-	if err != nil {
-		t.Fatalf("templates: %v", err)
-	}
-
-	azSvc := authz.NewService(pool.Pool)
-	authSvc := auth.NewService(pool)
-	limiter := auth.NewRateLimiter()
-	wsSvc := workspace.NewService(pool, azSvc, store)
-	clientsSvc := clients.NewService(pool)
-	projectsSvc := projects.NewService(pool)
-	ratesSvc := rates.NewService(pool)
-	reportingSvc := reporting.NewService(pool)
-	trackingSvc := tracking.NewService(pool, clock.System{}, ratesSvc)
-
-	lay := layout.New(pool, wsSvc)
-	mux := http.NewServeMux()
-
-	auth.NewHandler(authSvc, store, tpls, limiter).Register(mux)
-	workspace.NewHandler(wsSvc).Register(mux)
-	protect := func(next http.Handler) http.Handler {
-		return authz.RequireAuth(azSvc.RequireWorkspaceMember(next))
-	}
-	clients.NewHandler(clientsSvc, tpls, lay).Register(mux, protect)
-	projects.NewHandler(projectsSvc, clientsSvc, tpls, lay).Register(mux, protect)
-	rates.NewHandler(ratesSvc, clientsSvc, projectsSvc, tpls, lay).Register(mux, protect)
-	tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, tpls, lay).Register(mux, protect)
-	reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, wsSvc, tpls, lay).Register(mux, protect)
-
-	var handler http.Handler = mux
-	handler = csrf.Middleware(secret, false)(handler)
-	handler = store.Loader(handler)
-	handler = sharedhttp.Logging(logging.New("dev"))(handler)
-	handler = sharedhttp.RequestID(handler)
-	handler = sharedhttp.Recover(handler)
-
-	ts := httptest.NewServer(handler)
-	t.Cleanup(ts.Close)
-	return ts
-}
-
-func findTemplatesDir(t *testing.T) string {
-	t.Helper()
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for i := 0; i < 6; i++ {
-		candidate := filepath.Join(wd, "web", "templates")
-		if _, err := os.Stat(candidate); err == nil {
-			return candidate
-		}
-		parent := filepath.Dir(wd)
-		if parent == wd {
-			break
-		}
-		wd = parent
-	}
-	t.Fatalf("web/templates not found from test working dir")
-	return ""
-}
 
 type client struct {
 	t  *testing.T
@@ -169,7 +75,7 @@ func body(t *testing.T, resp *http.Response) string {
 }
 
 func TestHappyPathSignupToReport(t *testing.T) {
-	ts := buildServer(t)
+	ts := e2e.BuildServer(t)
 	c := newClient(t, ts)
 
 	// Signup.
@@ -249,7 +155,7 @@ func TestHappyPathSignupToReport(t *testing.T) {
 }
 
 func TestWorkspaceIsolation404(t *testing.T) {
-	ts := buildServer(t)
+	ts := e2e.BuildServer(t)
 	// Seed user A with a workspace + client.
 	a := newClient(t, ts)
 	if r := a.post("/signup", url.Values{

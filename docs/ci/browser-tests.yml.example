@@ -1,0 +1,89 @@
+# TimeTrak — browser contract tests CI job template
+#
+# This file is NOT currently wired into any CI platform — at the time the
+# browser harness landed, the repository had no checked-in CI config. When
+# CI is first adopted, copy this into the appropriate location
+# (e.g. .github/workflows/browser-tests.yml) and adjust the matrix entries
+# as needed. Notes:
+#
+#   - The harness is Chromium-only by design (see add-browser-ui-contract-tests
+#     spec §"Browser tests MUST run on a single pinned configuration").
+#   - The Playwright install cache MUST be keyed on the pinned driver
+#     version; the pin lives in go.mod (github.com/playwright-community/
+#     playwright-go v0.5700.1) and is documented at the top of
+#     internal/e2e/browser/harness.go.
+#   - Artifacts under testdata/browser-artifacts/ (screenshots + traces)
+#     MUST be uploaded on failure for triage.
+#
+# Example below assumes GitHub Actions; the shape translates 1:1 to
+# GitLab CI or CircleCI with minor syntax tweaks.
+
+name: browser-tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  browser-tests:
+    name: browser contract tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: timetrak
+          POSTGRES_PASSWORD: timetrak
+          POSTGRES_DB: timetrak
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U timetrak"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://timetrak:timetrak@localhost:5432/timetrak?sslmode=disable
+      # Pinned Playwright-Go driver version. Keep in sync with go.mod.
+      PLAYWRIGHT_GO_VERSION: v0.5700.1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Apply migrations
+        run: make migrate-up
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          # Cache key is bound to the pinned driver version so upgrades
+          # force a fresh install.
+          key: playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_GO_VERSION }}
+          path: |
+            ~/.cache/ms-playwright
+            ~/.cache/ms-playwright-go
+
+      - name: Install Playwright + Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: make browser-install
+
+      - name: Run browser contract tests
+        run: make test-browser
+
+      - name: Upload browser artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-artifacts
+          path: testdata/browser-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7

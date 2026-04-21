@@ -8,7 +8,7 @@ endif
 
 DATABASE_URL ?= postgres://timetrak:timetrak@localhost:5432/timetrak?sslmode=disable
 
-.PHONY: run build test lint migrate-up migrate-down migrate-redo dev-seed backfill-rate-snapshots check-rate-snapshots db-up db-down fmt vet tidy
+.PHONY: run build test lint migrate-up migrate-down migrate-redo dev-seed backfill-rate-snapshots check-rate-snapshots db-up db-down fmt vet tidy browser-install test-browser
 
 run:
 	go run ./cmd/web
@@ -67,3 +67,16 @@ db-up:
 
 db-down:
 	docker compose down
+
+# Browser-driven UI contract tests (Playwright + Chromium). Gated behind
+# the `browser` Go build tag so the default `make test` stays hermetic and
+# does not require browser binaries. Run `make browser-install` once to
+# fetch the driver + Chromium (~200MB) before the first `make test-browser`.
+# The pinned Playwright-Go version lives in go.mod and is documented at the
+# top of internal/e2e/browser/harness.go — upgrades require their own
+# OpenSpec change.
+browser-install:
+	go run github.com/playwright-community/playwright-go/cmd/playwright@v0.5700.1 install --with-deps chromium
+
+test-browser:
+	go test -tags=browser -p 1 ./internal/e2e/browser/...
