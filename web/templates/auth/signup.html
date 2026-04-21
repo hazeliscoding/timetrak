@@ -4,8 +4,10 @@
   <h1>Create your TimeTrak account</h1>
   <p class="muted">We'll set up your personal workspace automatically.</p>
 
-  {{if .Error}}
-    <div class="flash flash-error" role="alert" aria-live="assertive">{{.Error}}</div>
+  {{if or .Error .FieldErrors}}
+    <div id="signup-form-error" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap>
+      {{if .Error}}{{.Error}}{{else}}Please fix the errors below.{{end}}
+    </div>
   {{end}}
 
   <form method="post" action="/signup" novalidate>
@@ -13,7 +15,7 @@
 
     <div class="field">
       <label for="display_name">Display name</label>
-      <input id="display_name" name="display_name" type="text" autocomplete="name" required
+      <input id="display_name" name="display_name" type="text" autocomplete="name" required aria-required="true"
              value="{{.DisplayName}}" autofocus
              {{with index .FieldErrors "display_name"}}aria-invalid="true" aria-describedby="err-display_name"{{end}}>
       {{with index .FieldErrors "display_name"}}<span id="err-display_name" class="error">{{.}}</span>{{end}}
@@ -21,7 +23,7 @@
 
     <div class="field">
       <label for="email">Email</label>
-      <input id="email" name="email" type="email" autocomplete="username" required
+      <input id="email" name="email" type="email" autocomplete="username" required aria-required="true"
              value="{{.Email}}"
              {{with index .FieldErrors "email"}}aria-invalid="true" aria-describedby="err-email"{{end}}>
       {{with index .FieldErrors "email"}}<span id="err-email" class="error">{{.}}</span>{{end}}
@@ -29,7 +31,7 @@
 
     <div class="field">
       <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="new-password" required minlength="10"
+      <input id="password" name="password" type="password" autocomplete="new-password" required aria-required="true" minlength="10"
              aria-describedby="pw-hint{{with index .FieldErrors "password"}} err-password{{end}}"
              {{with index .FieldErrors "password"}}aria-invalid="true"{{end}}>
       <span id="pw-hint" class="hint">At least 10 characters.</span>

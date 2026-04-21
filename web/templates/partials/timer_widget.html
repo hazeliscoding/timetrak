@@ -19,7 +19,7 @@
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
       <div class="field" style="flex:1;min-width:180px;margin-bottom:0">
         <label for="start-project">Project</label>
-        <select id="start-project" name="project_id" required>
+        <select id="start-project" name="project_id" required aria-required="true">
           <option value="">Select…</option>
           {{range .Projects}}<option value="{{.ID}}">{{.ClientName}} — {{.Name}}</option>{{end}}
         </select>

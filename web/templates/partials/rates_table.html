@@ -1,7 +1,7 @@
 {{define "rates_table"}}
 <div id="rates-table">
   {{if not .Rules}}
-    <div class="empty card">
+    <div class="empty card" aria-live="polite">
       <h2>No rate rules yet</h2>
       <p class="muted">Create at least a workspace-default rule so billable entries can be valued.</p>
     </div>

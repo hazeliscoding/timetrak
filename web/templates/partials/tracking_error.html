@@ -13,7 +13,8 @@
 {{if .ErrorCode}}
 <div class="flash flash-error tracking-error"
      role="alert"
-     aria-live="polite"
+     tabindex="-1"
+     data-focus-after-swap
      data-tracking-error-code="{{.ErrorCode}}">
   <span aria-hidden="true" class="tracking-error-icon">&#9888;</span>
   <span class="tracking-error-text">{{.Message}}</span>

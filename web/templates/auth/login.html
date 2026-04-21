@@ -5,19 +5,21 @@
   <p class="muted">Track billable time, clients, and projects.</p>
 
   {{if .Error}}
-    <div class="flash flash-error" role="alert" aria-live="assertive">{{.Error}}</div>
+    <div id="login-form-error" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap>{{.Error}}</div>
   {{end}}
 
   <form method="post" action="/login" novalidate>
     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
     <div class="field">
       <label for="email">Email</label>
-      <input id="email" name="email" type="email" autocomplete="username" required
-             value="{{.Email}}" autofocus>
+      <input id="email" name="email" type="email" autocomplete="username" required aria-required="true"
+             value="{{.Email}}" autofocus
+             {{if .Error}}aria-invalid="true" aria-describedby="login-form-error"{{end}}>
     </div>
     <div class="field">
       <label for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <input id="password" name="password" type="password" autocomplete="current-password" required aria-required="true"
+             {{if .Error}}aria-invalid="true" aria-describedby="login-form-error"{{end}}>
     </div>
     <button class="btn btn-primary" type="submit">Sign in</button>
   </form>

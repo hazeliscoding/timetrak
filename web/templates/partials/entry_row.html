@@ -6,7 +6,7 @@
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
         <div class="field" style="margin-bottom:0;min-width:180px;flex:1">
           <label for="edit-proj-{{.Entry.ID}}" class="sr-only">Project</label>
-          <select id="edit-proj-{{.Entry.ID}}" name="project_id" required {{if eq .ErrorCode "tracking.cross_workspace"}}data-focus-after-swap{{else if not .ErrorCode}}autofocus data-focus-after-swap{{end}}>
+          <select id="edit-proj-{{.Entry.ID}}" name="project_id" required aria-required="true" {{if eq .ErrorCode "tracking.cross_workspace"}}data-focus-after-swap{{else if not .ErrorCode}}autofocus data-focus-after-swap{{end}}>
             {{range .Projects}}
               <option value="{{.ID}}" {{if eq .ID $.Entry.ProjectID}}selected{{end}}>{{.ClientName}} — {{.Name}}</option>
             {{end}}
@@ -18,11 +18,11 @@
         </div>
         <div class="field" style="margin-bottom:0">
           <label for="edit-start-{{.Entry.ID}}" class="sr-only">Started at (UTC ISO8601)</label>
-          <input id="edit-start-{{.Entry.ID}}" name="started_at" type="text" required value="{{iso .Entry.StartedAt}}" style="width:15rem">
+          <input id="edit-start-{{.Entry.ID}}" name="started_at" type="text" required aria-required="true" value="{{iso .Entry.StartedAt}}" style="width:15rem">
         </div>
         <div class="field" style="margin-bottom:0">
           <label for="edit-end-{{.Entry.ID}}" class="sr-only">Ended at (UTC ISO8601)</label>
-          <input id="edit-end-{{.Entry.ID}}" name="ended_at" type="text" required value="{{if .Entry.EndedAt}}{{iso .Entry.EndedAt}}{{end}}" style="width:15rem"{{if eq .ErrorCode "tracking.invalid_interval"}} data-focus-after-swap aria-invalid="true"{{end}}>
+          <input id="edit-end-{{.Entry.ID}}" name="ended_at" type="text" required aria-required="true" value="{{if .Entry.EndedAt}}{{iso .Entry.EndedAt}}{{end}}" style="width:15rem"{{if eq .ErrorCode "tracking.invalid_interval"}} data-focus-after-swap aria-invalid="true"{{end}}>
         </div>
         <label class="row" style="gap:.25rem;margin:0">
           <input type="checkbox" name="is_billable" {{if .Entry.IsBillable}}checked{{end}}>
@@ -38,7 +38,7 @@
       </form>
     </td>
   {{else}}
-    <td>{{formatDate .Entry.StartedAt}}<br><span class="muted">{{formatTime .Entry.StartedAt}}{{if .Entry.EndedAt}}–{{formatTime .Entry.EndedAt}}{{end}}</span></td>
+    <th scope="row">{{formatDate .Entry.StartedAt}}<br><span class="muted">{{formatTime .Entry.StartedAt}}{{if .Entry.EndedAt}}–{{formatTime .Entry.EndedAt}}{{end}}</span></th>
     <td>{{.Entry.ClientName}}</td>
     <td><strong>{{.Entry.ProjectName}}</strong></td>
     <td>{{if .Entry.Description}}{{.Entry.Description}}{{else}}<span class="muted">—</span>{{end}}</td>
@@ -49,7 +49,7 @@
       {{if not .Entry.EndedAt}}<span class="badge badge-running">&#9679; Running</span>{{end}}
     </td>
     <td class="row" style="justify-content:flex-end">
-      <button type="button" class="btn btn-ghost"
+      <button type="button" class="btn btn-ghost" data-focus-after-swap
               hx-get="/time-entries/{{.Entry.ID}}/edit"
               hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML">Edit</button>
       <form hx-delete="/time-entries/{{.Entry.ID}}" hx-target="#entry-{{.Entry.ID}}" hx-swap="outerHTML"

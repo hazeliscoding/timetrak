@@ -25,12 +25,13 @@
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
       <h2 class="mt-0">New project</h2>
       {{if .NewForm.Error}}
-        <div class="flash flash-error" role="alert" aria-live="assertive">{{.NewForm.Error}}</div>
+        <div id="new-project-form-error" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap>{{.NewForm.Error}}</div>
       {{end}}
       <div class="row">
         <div class="field" style="flex:1;min-width:180px;margin-bottom:0">
           <label for="new-client">Client</label>
-          <select id="new-client" name="client_id" required>
+          <select id="new-client" name="client_id" required aria-required="true"
+                  {{if .NewForm.Error}}aria-invalid="true" aria-describedby="new-project-form-error"{{end}}>
             <option value="">Select…</option>
             {{range .ActiveClients}}
               <option value="{{.ID}}" {{if eq (printf "%s" .ID) $.NewForm.ClientID}}selected{{end}}>{{.Name}}</option>
@@ -39,7 +40,8 @@
         </div>
         <div class="field" style="flex:1;min-width:200px;margin-bottom:0">
           <label for="new-pname">Project name</label>
-          <input id="new-pname" name="name" type="text" required value="{{.NewForm.Name}}">
+          <input id="new-pname" name="name" type="text" required aria-required="true" value="{{.NewForm.Name}}"
+                 {{if .NewForm.Error}}aria-invalid="true" aria-describedby="new-project-form-error"{{end}}>
         </div>
         <div class="field" style="margin-bottom:0">
           <label for="new-pcode">Code</label>

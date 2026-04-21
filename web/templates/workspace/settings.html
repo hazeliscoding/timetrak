@@ -11,18 +11,20 @@
       Reports bucket time entries into calendar days using this timezone.
       Changing it takes effect on the next report request — existing entries are not modified.
     </p>
+    {{if .FormError}}
+      <div id="ws-settings-error" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap>{{.FormError}}</div>
+    {{end}}
     <div class="field">
       <label for="ws-tz">Timezone</label>
-      <select id="ws-tz" name="reporting_timezone" aria-describedby="ws-tz-help">
+      <select id="ws-tz" name="reporting_timezone"
+              aria-describedby="ws-tz-help{{if .FormError}} ws-settings-error{{end}}"
+              {{if .FormError}}aria-invalid="true"{{end}}>
         {{range .Timezones}}
           <option value="{{.}}" {{if eq . $.Workspace.ReportingTimezone}}selected{{end}}>{{.}}</option>
         {{end}}
       </select>
       <small id="ws-tz-help" class="muted">IANA timezone name, e.g. <code>America/New_York</code>.</small>
     </div>
-    {{if .FormError}}
-      <div class="flash flash-error" role="alert">{{.FormError}}</div>
-    {{end}}
     <div class="row">
       <button type="submit" class="btn btn-primary">Save timezone</button>
     </div>

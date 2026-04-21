@@ -46,23 +46,24 @@
     <form method="post" action="/time-entries" class="card">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
       <h2 class="mt-0">Add manual entry</h2>
-      {{if .ManualForm.Error}}<div class="flash flash-error" role="alert" aria-live="assertive">{{.ManualForm.Error}}</div>{{end}}
+      {{if .ManualForm.Error}}<div id="manual-entry-form-error" class="flash flash-error" role="alert" tabindex="-1" data-focus-after-swap>{{.ManualForm.Error}}</div>{{end}}
       <div class="row">
         <div class="field" style="margin-bottom:0">
           <label for="m-date">Date</label>
-          <input id="m-date" name="date" type="date" required value="{{.ManualForm.Date}}">
+          <input id="m-date" name="date" type="date" required aria-required="true" value="{{.ManualForm.Date}}"
+                 {{if .ManualForm.Error}}aria-describedby="manual-entry-form-error"{{end}}>
         </div>
         <div class="field" style="margin-bottom:0">
           <label for="m-start">Start</label>
-          <input id="m-start" name="start_time" type="time" required value="{{.ManualForm.StartTime}}">
+          <input id="m-start" name="start_time" type="time" required aria-required="true" value="{{.ManualForm.StartTime}}">
         </div>
         <div class="field" style="margin-bottom:0">
           <label for="m-end">End</label>
-          <input id="m-end" name="end_time" type="time" required value="{{.ManualForm.EndTime}}">
+          <input id="m-end" name="end_time" type="time" required aria-required="true" value="{{.ManualForm.EndTime}}">
         </div>
         <div class="field" style="margin-bottom:0;flex:1;min-width:180px">
           <label for="m-project">Project</label>
-          <select id="m-project" name="project_id" required>
+          <select id="m-project" name="project_id" required aria-required="true">
             <option value="">Select…</option>
             {{range .ActiveProjects}}<option value="{{.ID}}" {{if eq (printf "%s" .ID) $.ManualForm.ProjectID}}selected{{end}}>{{.ClientName}} — {{.Name}}</option>{{end}}
           </select>

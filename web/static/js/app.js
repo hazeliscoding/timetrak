@@ -5,10 +5,18 @@
 
   function applyTheme(theme) {
     root.setAttribute("data-theme", theme);
+    syncThemePressed(theme);
+  }
+
+  function syncThemePressed(theme) {
+    document.querySelectorAll("[data-theme-set]").forEach(function (btn) {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-theme-set") === theme ? "true" : "false");
+    });
   }
 
   const stored = localStorage.getItem(THEME_KEY) || "system";
   applyTheme(stored);
+  document.addEventListener("DOMContentLoaded", function () { syncThemePressed(stored); });
 
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("[data-theme-set]");
@@ -18,7 +26,13 @@
     applyTheme(next);
   });
 
-  // HTMX: after a swap, move focus to [data-focus-after-swap] within the swapped node.
+  // HTMX focus-after-swap convention.
+  // After HTMX swaps a node in, focus the first [data-focus-after-swap] inside
+  // the swap target (falling back to any [autofocus]). Apply this attribute
+  // only to intent swaps per the focus-flow catalogue in
+  // openspec/changes/polish-mvp-ui-for-accessibility-and-consistency/design.md;
+  // passive peer-refresh swaps (dashboard summary, rates-changed, etc.) MUST
+  // NOT carry the attribute so focus stays where the user was.
   document.body.addEventListener("htmx:afterSwap", function (evt) {
     const target = evt.detail.target;
     if (!target) return;
@@ -28,9 +42,6 @@
     }
   });
 
-  // Scope-toggle for the rate form: a [data-scope-select] shows/hides its
-  // sibling [data-scope-target] field groups by matching value. The no-JS
-  // fallback leaves all groups visible so the form still submits correctly.
   function applyScopeToggle(select) {
     const form = select.closest("form") || document;
     const targets = form.querySelectorAll("[data-scope-target]");
@@ -43,7 +54,6 @@
     if (!select) return;
     applyScopeToggle(select);
   });
-  // Initialize on load and after any HTMX swap (the form may be re-rendered OOB).
   function initScopeToggles(root) {
     (root || document).querySelectorAll("[data-scope-select]").forEach(applyScopeToggle);
   }
@@ -52,7 +62,6 @@
     initScopeToggles(evt.detail.target);
   });
 
-  // Timer elapsed updater: elements with [data-timer-started-at] tick once per second.
   function fmtElapsed(seconds) {
     const s = Math.max(0, Math.floor(seconds));
     const h = Math.floor(s / 3600);

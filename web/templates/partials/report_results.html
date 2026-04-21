@@ -35,7 +35,7 @@
     <tbody>
       {{range .Report.ByDay}}
         <tr>
-          <td>{{.Label}}</td>
+          <th scope="row">{{.Label}}</th>
           <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
           <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
           <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
@@ -58,7 +58,7 @@
     <tbody>
       {{range .Report.ByClient}}
         <tr>
-          <td>{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</td>
+          <th scope="row">{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</th>
           <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
           <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
           <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
@@ -84,7 +84,7 @@
     <tbody>
       {{range .Report.ByProject}}
         <tr>
-          <td>{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</td>
+          <th scope="row">{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</th>
           <td>{{.ClientLabel}}</td>
           <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
           <td class="num tabular">{{formatDuration .BillableSeconds}}</td>

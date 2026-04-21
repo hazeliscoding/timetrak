@@ -29,7 +29,7 @@
       </form>
     </td>
   {{else}}
-    <td>{{.Rule.Level}}</td>
+    <th scope="row">{{.Rule.Level}}</th>
     <td>
       {{if eq .Rule.Level "project"}}{{.Rule.ProjectName}}
       {{else if eq .Rule.Level "client"}}{{.Rule.ClientName}}
@@ -60,7 +60,7 @@
       {{else}}
         <form hx-post="/rates/{{.Rule.ID}}/delete"
               hx-target="#rates-table" hx-swap="outerHTML"
-              hx-confirm="Delete this rate rule?" style="margin:0;display:inline">
+              hx-confirm="Delete this rate rule? This cannot be undone." style="margin:0;display:inline">
           <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
           <button class="btn btn-ghost btn-danger" type="submit">Delete</button>
         </form>

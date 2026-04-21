@@ -1,7 +1,8 @@
 {{define "spinner"}}
-<div id="report-loading" class="htmx-indicator spinner" aria-hidden="true">
-  <span class="spinner-dot"></span>
-  <span class="spinner-dot"></span>
-  <span class="spinner-dot"></span>
+<div id="report-loading" class="htmx-indicator spinner" role="status">
+  <span class="sr-only">Loading…</span>
+  <span aria-hidden="true" class="spinner-dot"></span>
+  <span aria-hidden="true" class="spinner-dot"></span>
+  <span aria-hidden="true" class="spinner-dot"></span>
 </div>
 {{end}}
