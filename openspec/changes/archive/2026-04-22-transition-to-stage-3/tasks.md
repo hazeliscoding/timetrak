@@ -38,5 +38,5 @@ All edits in this group are scoped to the top of `CLAUDE.md` — specifically th
 
 ## 6. Commit and archive
 
-- [ ] 6.1 Use the `tt-conventional-commit` skill to commit all edits together as `docs(openspec): transition repo framing to Stage 3` (or `docs(meta): ...` if preferred). Single commit. No Claude Code attribution trailer.
-- [ ] 6.2 Once merged, run `/opsx:archive transition-to-stage-3`. The archive move should be a pure `git mv`; if the archive tool re-inserts any TBD placeholder into `openspec/specs/workspace/spec.md`, revert it in the same archive commit.
+- [x] 6.1 Use the `tt-conventional-commit` skill to commit all edits together as `docs(openspec): transition repo framing to Stage 3` (or `docs(meta): ...` if preferred). Single commit. No Claude Code attribution trailer.
+- [x] 6.2 Once merged, run `/opsx:archive transition-to-stage-3`. The archive move should be a pure `git mv`; if the archive tool re-inserts any TBD placeholder into `openspec/specs/workspace/spec.md`, revert it in the same archive commit.
