@@ -1,0 +1,35 @@
+{{define "brandmark"}}
+  {{/*
+    TimeTrak wordmark partial (inline SVG).
+
+    Dict keys:
+      Size        (string, optional) — "md" (default) | "sm"
+      Decorative  (bool,   optional) — false (default): role="img" + <title>TimeTrak</title>
+                                         true:           aria-hidden="true", no <title>
+
+    Contract (see openspec/specs/ui-partials "Brand mark partial"):
+      - Fill and stroke MUST reference only currentColor, var(--color-text),
+        or var(--color-accent). No raw hex/rgb/named colours. No new tokens.
+      - Outer size is driven by CSS custom properties on the host — height
+        is var(--space-5) for md, var(--space-4) for sm; width scales from
+        the viewBox aspect ratio.
+      - Decorative=true is reserved for surfaces that already name the
+        product in adjacent text; the app header uses Decorative=false.
+  */}}
+  {{- $size := .Size -}}
+  {{- if eq $size "" -}}{{- $size = "md" -}}{{- end -}}
+  {{- $h := "var(--space-5)" -}}
+  {{- if eq $size "sm" -}}{{- $h = "var(--space-4)" -}}{{- end -}}
+  {{- if .Decorative -}}
+    <svg class="brandmark brandmark--{{ $size }}" style="height: {{ $h }}; width: auto; display: inline-block; vertical-align: middle;" viewBox="0 0 120 24" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="3" width="3" height="18" rx="1" style="fill: var(--color-accent);"/>
+      <text x="9" y="18" style="font-family: var(--font-sans); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; fill: currentColor;">TimeTrak</text>
+    </svg>
+  {{- else -}}
+    <svg class="brandmark brandmark--{{ $size }}" style="height: {{ $h }}; width: auto; display: inline-block; vertical-align: middle;" viewBox="0 0 120 24" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg">
+      <title>TimeTrak</title>
+      <rect x="0" y="3" width="3" height="18" rx="1" style="fill: var(--color-accent);"/>
+      <text x="9" y="18" style="font-family: var(--font-sans); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; fill: currentColor;">TimeTrak</text>
+    </svg>
+  {{- end -}}
+{{end}}

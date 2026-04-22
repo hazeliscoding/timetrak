@@ -3,7 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{/*
+    Title composition: pages SHOULD override this block as
+    "<Page name> · TimeTrak" using U+00B7 MIDDLE DOT with a single space
+    either side (e.g. `{{define "title"}}Clients · TimeTrak{{end}}`).
+    Pages that do not override render just "TimeTrak". See
+    docs/timetrak_brand_guidelines.md "Title convention".
+  */}}
   <title>{{block "title" .}}TimeTrak{{end}}</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="stylesheet" href="/static/css/tokens.css">
   <link rel="stylesheet" href="/static/css/app.css">
   <script src="/static/vendor/htmx.min.js" defer></script>

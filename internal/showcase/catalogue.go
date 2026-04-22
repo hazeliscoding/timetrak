@@ -115,6 +115,32 @@ const fakeCSRFToken = "showcase-demo-csrf-token"
 // TestComponentCatalogueCoverage test enforces this.
 var ComponentEntries = []ComponentEntry{
 	{
+		ID:          "brandmark",
+		Name:        "brandmark",
+		PartialName: "brandmark",
+		SourcePath:  "web/templates/partials/brandmark.html",
+		SpecRef:     "openspec/specs/ui-partials/spec.md",
+		Purpose:     "TimeTrak product wordmark. Inline SVG that consumes only currentColor and var(--color-accent); no raw colour values and no new tokens. The default render (Size=md, Decorative=false) is used in the app header; Decorative=true is reserved for surfaces that already name the product in adjacent text. See docs/timetrak_brand_guidelines.md for usage rules.",
+		DictKeys: []DictKeyDoc{
+			{Name: "Size", Required: false, Default: "md", Note: "Height token — \"md\" = var(--space-5), \"sm\" = var(--space-4). Width auto-scales from viewBox."},
+			{Name: "Decorative", Required: false, Default: "false", Note: "When false, emits role=\"img\" + <title>TimeTrak</title>. When true, emits aria-hidden=\"true\" and omits <title>."},
+		},
+		Examples: []ComponentExample{
+			{ID: "default", Label: "Default (header use)", PartialName: "brandmark", SnippetID: "brandmark.default", Dict: map[string]any{
+				"Size": "md", "Decorative": false,
+			}},
+			{ID: "sm-decorative", Label: "Small, decorative", PartialName: "brandmark", SnippetID: "brandmark.sm_decorative", Dict: map[string]any{
+				"Size": "sm", "Decorative": true,
+			}},
+		},
+		A11yNotes: []string{
+			"Non-decorative render announces as graphic named \"TimeTrak\" via role=\"img\" + <title>.",
+			"Decorative render is aria-hidden; only use adjacent to text that already names the product.",
+			"When wrapped in an anchor (app header), the anchor inherits the global :focus-visible outline; no component-scoped override.",
+			"Fill/stroke reference only currentColor and var(--color-accent); status is never conveyed by the mark's colour.",
+		},
+	},
+	{
 		ID:          "form-field",
 		Name:        "form_field",
 		PartialName: "form_field",

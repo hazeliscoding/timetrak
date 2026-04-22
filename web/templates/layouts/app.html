@@ -1,7 +1,7 @@
 {{define "app-shell"}}
 <div class="app-shell">
   <header class="app-header" role="banner">
-    <strong>TimeTrak</strong>
+    <a href="/dashboard" class="brandmark-link" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center;">{{template "brandmark" (dict "Size" "md" "Decorative" false)}}</a>
     {{template "header_workspace_switcher" .}}
     <span style="flex:1"></span>
     <span aria-live="polite" id="global-status" class="muted"></span>

@@ -62,6 +62,7 @@ After MVP: **one change per meaningful unit of work** (e.g. `add-csv-export`), n
 - Use domain-specific copy (`Start timer`, `Billable this week`, `Client rate`, `Running entry`)
 - Server-rendered flows over SPA patterns; HTMX for timers, inline edits, filtering, pagination, modals
 - Preserve sensible focus behavior after HTMX swaps; prefer native controls before custom widgets
+- Brand marks, browser-tab identity, and voice / microcopy are documented in `docs/timetrak_brand_guidelines.md` (companion to the style guide)
 
 ## Accessibility (binding)
 

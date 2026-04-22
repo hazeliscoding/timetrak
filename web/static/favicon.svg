@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TimeTrak favicon. Monochrome capital T glyph.
+
+  Theming: follows the browser / OS prefers-color-scheme preference via
+  the inline <style> below. It does NOT follow the app's in-tab
+  data-theme toggle — favicons are fetched as a separate resource and
+  cannot reference the app's CSS custom-property cascade. See
+  openspec/changes/archive/.../refine-timetrak-brand-and-product-visual-language
+  design.md Decision 8.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="TimeTrak">
+  <style>
+    path { fill: #18181b; }
+    @media (prefers-color-scheme: dark) { path { fill: #fafafa; } }
+  </style>
+  <path d="M4 6 h24 v5 h-9 v17 h-6 V11 H4 Z"/>
+</svg>

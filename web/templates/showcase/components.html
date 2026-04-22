@@ -78,6 +78,19 @@
           </details>
         </section>
       {{end}}
+
+      {{if eq $entry.ID "brandmark"}}
+        <section id="entry-{{$entry.ID}}-favicon" class="stack" aria-labelledby="entry-{{$entry.ID}}-favicon-title" style="margin-top:var(--space-5)">
+          <h3 id="entry-{{$entry.ID}}-favicon-title" style="font-size:1rem">Favicon (browser-tab identity)</h3>
+          <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);display:flex;gap:var(--space-4);align-items:center">
+            <img src="/static/favicon.svg" alt="TimeTrak favicon preview" width="32" height="32" style="display:block">
+            <img src="/static/favicon.svg" alt="" aria-hidden="true" width="16" height="16" style="display:block">
+            <p class="muted" style="margin:0;max-width:52ch">
+              The favicon is a separate asset fetched by the browser. It follows the OS <code>prefers-color-scheme</code> preference (light / dark), not the app's in-tab <code>data-theme</code> toggle. Source: <code>web/static/favicon.svg</code>.
+            </p>
+          </div>
+        </section>
+      {{end}}
     </section>
   {{end}}
 

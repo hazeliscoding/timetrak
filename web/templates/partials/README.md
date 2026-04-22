@@ -99,6 +99,39 @@ No new template funcs were added for this refactor. The existing set is:
 
 ## Canonical partials
 
+### `brandmark`
+
+TimeTrak wordmark as an inline SVG. The default render (`Size=md`,
+`Decorative=false`) ships in the app header wrapped in
+`<a href="/dashboard">` so clicking the wordmark returns the user to
+their dashboard. The partial consumes **only** `currentColor` and
+`var(--color-accent)` — no raw hex values, no new tokens, no primitive
+ramps. Adding a brand colour requires a `ui-foundation` amendment; do
+not introduce a `--color-brand-*` alias here.
+
+**Context keys:**
+
+| Key           | Required | Default | Notes                                                                                            |
+| ------------- | -------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `Size`        | no       | `md`    | `md` = `var(--space-5)` tall, `sm` = `var(--space-4)` tall. Width auto-scales from the viewBox. |
+| `Decorative`  | no       | `false` | When `false`, emits `role="img"` + `<title>TimeTrak</title>`. When `true`, emits `aria-hidden`. |
+
+**Scope:** single-source wordmark for the app header, the showcase brand
+surface, and the brand guidelines doc. Other product-identity artefacts
+(app icon, OG/social-share card, email-signature mark, PNG/ICO favicon
+fallback) are explicit follow-ups and MUST NOT be added to this partial.
+
+**Accessibility:** non-decorative render announces as a graphic named
+"TimeTrak". Decorative render is reserved for surfaces that already name
+the product in adjacent text — the default is non-decorative.
+`prefers-reduced-motion` has no effect (the mark is static). Focus is
+handled by the wrapping anchor; the partial does NOT introduce a
+component-scoped focus override.
+
+**Companion surfaces:** `web/static/favicon.svg` (browser-tab identity;
+follows OS `prefers-color-scheme`, not the in-tab `data-theme` toggle),
+`docs/timetrak_brand_guidelines.md` (usage rules, voice, microcopy).
+
 ### `form_field`
 
 Visible-label text-style input with an optional hint and an optional inline

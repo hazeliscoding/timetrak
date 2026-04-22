@@ -12,6 +12,9 @@ Stage 2 UI priorities in order:
 4. `create-component-library-showcase-and-usage-docs` — internal showcase + usage docs
 5. `refine-timetrak-brand-and-product-visual-language` — stronger identity, visual taste
 
+For brand marks, browser-tab identity, and voice / microcopy, see
+`docs/timetrak_brand_guidelines.md` (companion doc, narrative reference).
+
 ---
 
 ## Product Feel
