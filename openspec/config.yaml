@@ -3,9 +3,11 @@ schema: spec-driven
 context: |
   Project: TimeTrak
   Product type: Time tracking and billing application for contractors, freelancers, and small teams
-  Stage: Post-MVP — Stage 2 (Stabilize). MVP bootstrap is complete and archived. Active work focuses on
-  hardening authorization, timer integrity, rate resolution, reporting correctness, UI polish, accessibility
-  compliance, and establishing the component library foundation.
+  Stage: Stage 3 — Continuous Delivery. MVP bootstrap and every hardening and stabilization change that
+  followed it are complete and archived. New features, UX changes, domain rule updates, and cross-cutting
+  refactors are each shepherded as an individual OpenSpec change against the accepted baseline:
+  propose with /opsx:propose, implement, verify, archive quickly so openspec/specs/ stays current.
+  openspec/specs/ is the source of truth for product behavior; docs/ holds architecture and UX reference.
 
   Stack:
   - Go backend (modular monolith)
@@ -38,7 +40,7 @@ context: |
   - Avoid generic AI-SaaS patterns: blob art, oversized hero sections, random gradients, vague productivity copy
   - Tables are first-class citizens
   - Domain-specific copy: Start timer, Billable this week, Client rate, Running entry
-  - Component library foundation is being established in Stage 2 — prefer reusable partials over bespoke markup
+  - Prefer reusable partials from the component library foundation (tokens, partials, showcase) over bespoke markup
 
   UI conventions:
   - Server-rendered flows over SPA patterns
@@ -62,7 +64,6 @@ rules:
     - One change per meaningful unit of work. Never umbrella proposals like phase-2 or misc-cleanup.
     - State what is in scope and out of scope explicitly.
     - Call out assumptions, risks, and likely follow-up changes.
-    - Stage 2 changes should harden, polish, or stabilize existing behavior — not expand the domain model.
     - Stage 3 changes may introduce new capability; call that out explicitly in the proposal.
     - When UI is affected, describe the intended user-facing workflow and how it aligns with the style guide.
 

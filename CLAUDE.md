@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-TimeTrak is **post-MVP — Stage 2 (Stabilize)**. The MVP bootstrap change has been implemented and archived under `openspec/changes/archive/2026-04-17-bootstrap-timetrak-mvp/`. The application source exists; `openspec/specs/` is the accepted behavioral baseline.
+TimeTrak is in **Stage 3 — Continuous Delivery**. The MVP bootstrap and every hardening and stabilization change that followed it have been implemented and archived under `openspec/changes/archive/`; `openspec/specs/` is the accepted behavioral baseline and the source of truth for product behavior.
 
-Active work follows the Stage 2 roadmap: hardening workspace authorization, timer integrity, rate resolution, reporting correctness, UI/accessibility polish, reusable UI partials, and component library foundation. See `docs/timetrak_post_mvp_openspec_roadmap.md` for the full roadmap and ordering.
+Stage 3 is an operating posture, not a fixed roadmap: new features, UX changes, domain rule updates, and cross-cutting refactors are each proposed as an individual OpenSpec change against the accepted baseline, implemented, verified, and archived quickly so the baseline stays current. See `docs/timetrak_stage_3_roadmap.md` for candidate initiatives — that doc is orientation only, not a plan or commitment, and every candidate MUST go through `/opsx:propose` before implementation.
 
 New work must follow the one-change-per-unit rule: use `/opsx:propose <change-name>` to create a focused change before implementing. Never umbrella changes like `phase-2` or `misc-cleanup`.
 
@@ -21,7 +21,7 @@ Do not introduce SPA frameworks, client-side state libraries, or ORMs that fight
 
 ## Domain Model
 
-Main hierarchy: **Workspace → Client → Project → Time Entry**. Rate resolution precedence: **project rate → client rate → workspace default**. Accepted MVP domains are `auth`, `workspace`, `clients`, `projects`, `tracking`, `rates`, `reporting` (see `openspec/config.yaml`).
+Main hierarchy: **Workspace → Client → Project → Time Entry**. Rate resolution precedence: **project rate → client rate → workspace default**. Accepted baseline capabilities are enumerated in `openspec/config.yaml` (`context.Accepted domains`); run `ls openspec/specs/` for the live list.
 
 ## Data Conventions (binding)
 
