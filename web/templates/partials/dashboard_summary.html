@@ -20,15 +20,20 @@
   </div>
   <div class="card">
     <div class="muted" style="font-size:.875rem">Estimated billable this week</div>
+    {{/* Single-metric fallback, NOT an empty_state surface — see the
+         sharpen-dashboard-and-empty-states design doc, Decision 3. */}}
     <div class="elapsed tabular">
       {{if .WeekEstimatedBillable}}
         {{range $cur, $amt := .WeekEstimatedBillable}}
           <div>{{formatMinor $amt $cur}}</div>
         {{end}}
       {{else}}
-        <div class="muted" style="font-size:1rem">No billable entries yet</div>
+        <div aria-label="No billable amount yet">—</div>
       {{end}}
     </div>
+    {{if not .WeekEstimatedBillable}}
+      <div class="muted" style="font-size:.875rem">No billable entries yet</div>
+    {{end}}
     {{if gt .EntriesWithoutRate 0}}
       <div class="muted" style="font-size:.875rem">{{template "status_chip" (dict "Kind" "warning" "Label" "No rate" "Variant" "filled")}} {{.EntriesWithoutRate}} entr{{if eq .EntriesWithoutRate 1}}y{{else}}ies{{end}} without a resolved rate</div>
     {{end}}

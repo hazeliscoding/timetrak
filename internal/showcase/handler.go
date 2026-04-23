@@ -58,6 +58,8 @@ func (h *Handler) Register(mux *http.ServeMux) {
 	mux.Handle("GET /dev/showcase", wrap(h.index))
 	mux.Handle("GET /dev/showcase/tokens", wrap(h.tokens))
 	mux.Handle("GET /dev/showcase/components", wrap(h.components))
+	mux.Handle("GET /dev/showcase/dashboard-states", wrap(h.dashboardStates))
+	mux.Handle("GET /dev/showcase/empty-states", wrap(h.emptyStates))
 }
 
 // view is the common base every showcase page composes.
@@ -170,6 +172,22 @@ func (h *Handler) components(w http.ResponseWriter, r *http.Request) {
 		BaseView: base,
 		Entries:  rendered,
 	})
+}
+
+func (h *Handler) dashboardStates(w http.ResponseWriter, r *http.Request) {
+	if !h.devOnly(w, r) {
+		return
+	}
+	base, _ := h.lay.Base(r, "dev-showcase")
+	_ = h.tpls.Render(w, http.StatusOK, "showcase.dashboard-states", indexView{BaseView: base})
+}
+
+func (h *Handler) emptyStates(w http.ResponseWriter, r *http.Request) {
+	if !h.devOnly(w, r) {
+		return
+	}
+	base, _ := h.lay.Base(r, "dev-showcase")
+	_ = h.tpls.Render(w, http.StatusOK, "showcase.empty-states", indexView{BaseView: base})
 }
 
 // splitTokenFamilies groups tokens into the three sections the tokens

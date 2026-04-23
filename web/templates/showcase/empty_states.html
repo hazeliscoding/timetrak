@@ -1,0 +1,97 @@
+{{define "title"}}Empty states · Showcase · TimeTrak (dev){{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <header>
+    <h1>Empty states</h1>
+    <p class="muted">
+      Every in-product zero-rows view renders through
+      <code>partials/empty_state</code>. Copy is aligned with
+      <code>docs/timetrak_brand_guidelines.md</code> §Voice principles and
+      §Empty-state microcopy patterns. Ad-hoc <code>&lt;p class="muted"&gt;</code>
+      empties are prohibited by <code>openspec/specs/ui-partials/spec.md</code>
+      (Empty state is mandatory for collection zero-rows views).
+    </p>
+  </header>
+
+  <section class="card" aria-labelledby="empty-dashboard-title">
+    <h2 id="empty-dashboard-title" class="mt-0">Dashboard — zero state</h2>
+    <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)">
+      <div class="dashboard-empty">
+        {{template "empty_state" (dict
+          "Title" "Set up your first client and project"
+          "Body" "TimeTrak tracks time against a client → project hierarchy. Create a client, add a project, and you can start a timer."
+          "ActionHref" "/clients"
+          "ActionText" "Create a client"
+          "Live" true)}}
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="empty-clients-title">
+    <h2 id="empty-clients-title" class="mt-0">Clients list</h2>
+    <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)">
+      {{template "empty_state" (dict
+        "Title" "No clients yet"
+        "Body" "Add your first client above to start tracking projects against it.")}}
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="empty-projects-noclients-title">
+    <h2 id="empty-projects-noclients-title" class="mt-0">Projects list — no clients yet</h2>
+    <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)">
+      {{template "empty_state" (dict
+        "Title" "Add a client first"
+        "Body" "Projects live under clients."
+        "ActionHref" "/clients"
+        "ActionText" "Create a client")}}
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="empty-projects-title">
+    <h2 id="empty-projects-title" class="mt-0">Projects list — no projects yet</h2>
+    <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)">
+      {{template "empty_state" (dict
+        "Title" "No projects yet"
+        "Body" "Add one above and assign it to a client.")}}
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="empty-rates-title">
+    <h2 id="empty-rates-title" class="mt-0">Rate rules list</h2>
+    <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)">
+      {{template "empty_state" (dict
+        "Title" "No rate rules yet"
+        "Body" "Create at least a workspace-default rule so billable entries can be valued."
+        "Live" true)}}
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="empty-reports-title">
+    <h2 id="empty-reports-title" class="mt-0">Reports — no entries match filters</h2>
+    <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)">
+      {{template "empty_state" (dict
+        "Title" "No entries match these filters"
+        "Body" "Try a different preset, widen the dates, or clear a filter."
+        "Live" true)}}
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="empty-entries-title">
+    <h2 id="empty-entries-title" class="mt-0">Entries list — filtered empty</h2>
+    <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)">
+      {{template "empty_state" (dict
+        "Title" "No entries match your filters"
+        "Body" "Start a timer from the dashboard or add a manual entry above."
+        "ActionHref" "/dashboard"
+        "ActionText" "Go to dashboard"
+        "Live" true)}}
+    </div>
+  </section>
+
+  <p>
+    <a href="/dev/showcase">Back to showcase index</a> ·
+    <a href="/dev/showcase/dashboard-states">Dashboard states gallery</a>
+  </p>
+</section>
+{{end}}

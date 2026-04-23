@@ -1,0 +1,75 @@
+{{define "title"}}Dashboard states · Showcase · TimeTrak (dev){{end}}
+{{define "shell"}}{{template "app-shell" .}}{{end}}
+{{define "content"}}
+<section class="stack">
+  <header>
+    <h1>Dashboard states</h1>
+    <p class="muted">
+      The dashboard is a three-state surface: <code>zero</code> (no projects
+      exist — workspace is fresh or fully cleaned up), <code>idle</code>
+      (projects exist, no running timer), <code>running</code> (a timer is
+      currently running). State is computed in
+      <code>tracking.dashboardStateFor</code> and passed to the template so
+      each state renders a cohesive layout rather than three empty cards
+      competing for attention.
+    </p>
+    <p class="muted">
+      Spec: <code>openspec/specs/ui-partials/spec.md</code> (Dashboard surface
+      renders three documented states).
+    </p>
+  </header>
+
+  <section class="card" aria-labelledby="state-zero-title">
+    <h2 id="state-zero-title" class="mt-0">zero — no projects</h2>
+    <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)">
+      <section class="stack">
+        <h1>Dashboard</h1>
+        <div class="dashboard-empty">
+          {{template "empty_state" (dict
+            "Title" "Set up your first client and project"
+            "Body" "TimeTrak tracks time against a client → project hierarchy. Create a client, add a project, and you can start a timer."
+            "ActionHref" "/clients"
+            "ActionText" "Create a client"
+            "Live" true)}}
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="state-idle-title">
+    <h2 id="state-idle-title" class="mt-0">idle — projects exist, no running timer</h2>
+    <p class="muted">
+      Renders <code>timer_control</code> in idle state + <code>dashboard_summary</code>.
+      The timer control's project picker is the primary affordance for
+      starting work; no separate "Jump back in" card competes with it.
+    </p>
+    <p class="muted" style="font-size:.875rem">
+      Live preview omitted here — the real dashboard renders at
+      <a href="/dashboard">/dashboard</a> when a workspace has projects but
+      no timer running. The rendered components
+      (<a href="/dev/showcase/components#entry-timer-control">timer_control</a>,
+      <a href="/dev/showcase/components#entry-dashboard-summary">dashboard_summary</a>)
+      each have their own showcase entries.
+    </p>
+  </section>
+
+  <section class="card" aria-labelledby="state-running-title">
+    <h2 id="state-running-title" class="mt-0">running — timer currently tracking</h2>
+    <p class="muted">
+      Renders <code>timer_control</code> in running state (accent-soft pill,
+      2px accent border, pulsing dot, tabular-nums elapsed time, distinct
+      <code>.btn-ghost</code> Stop control) + <code>dashboard_summary</code>.
+      The timer control is the app's signature object in this state.
+    </p>
+    <p class="muted" style="font-size:.875rem">
+      Live preview omitted — see <a href="/dev/showcase/components#entry-timer-control">timer_control showcase entry</a>
+      for the running-state rendering.
+    </p>
+  </section>
+
+  <p>
+    <a href="/dev/showcase">Back to showcase index</a> ·
+    <a href="/dev/showcase/empty-states">Empty states gallery</a>
+  </p>
+</section>
+{{end}}

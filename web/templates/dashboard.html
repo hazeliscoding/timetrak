@@ -1,29 +1,38 @@
 {{define "title"}}Dashboard · TimeTrak{{end}}
 {{define "shell"}}{{template "app-shell" .}}{{end}}
+{{/*
+  Dashboard is a three-state surface (zero / idle / running). State is
+  computed in the handler (tracking.dashboardStateFor) and passed as
+  .DashboardState so the template never branches on raw counts.
+
+  Zero-state copy is deliberately domain-specific (client → project → timer),
+  not generic onboarding. Voice: docs/timetrak_brand_guidelines.md.
+  Spec: openspec/specs/ui-partials/spec.md (Dashboard surface renders
+  three documented states).
+
+  The "Jump back in" card that used to live under the summary is removed:
+  the timer_control's idle state already surfaces a project picker, so a
+  second project list on the same screen was redundant.
+*/}}
 {{define "content"}}
 <section class="stack">
   <h1>Dashboard</h1>
 
-  {{template "timer_control" .Timer}}
+  {{if eq .DashboardState "zero"}}
+    <div class="dashboard-empty">
+      {{template "empty_state" (dict
+        "Title" "Set up your first client and project"
+        "Body" "TimeTrak tracks time against a client → project hierarchy. Create a client, add a project, and you can start a timer."
+        "ActionHref" "/clients"
+        "ActionText" "Create a client"
+        "Live" true)}}
+    </div>
+  {{else}}
+    {{template "timer_control" .Timer}}
 
-  <div hx-get="/dashboard/summary" hx-trigger="timer-changed from:body, entries-changed from:body" hx-swap="outerHTML">
-    {{template "dashboard_summary" .Summary}}
-  </div>
-
-  <div class="card">
-    <h2 class="mt-0">Jump back in</h2>
-    {{if .Projects}}
-      <ul class="nav" style="padding:0;margin:0">
-        {{range .Projects}}
-          <li style="list-style:none">
-            <strong>{{.ClientName}}</strong> · {{.Name}}
-            {{if .DefaultBillable}}{{template "status_chip" (dict "Kind" "billable" "Label" "Billable" "Variant" "filled")}}{{end}}
-          </li>
-        {{end}}
-      </ul>
-    {{else}}
-      <p class="muted">Add a <a href="/clients">client</a> and a <a href="/projects">project</a> to start tracking time.</p>
-    {{end}}
-  </div>
+    <div hx-get="/dashboard/summary" hx-trigger="timer-changed from:body, entries-changed from:body" hx-swap="outerHTML">
+      {{template "dashboard_summary" .Summary}}
+    </div>
+  {{end}}
 </section>
 {{end}}

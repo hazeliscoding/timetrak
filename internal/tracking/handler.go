@@ -136,9 +136,29 @@ func (h *Handler) Register(mux *http.ServeMux, protect func(http.Handler) http.H
 
 type dashboardView struct {
 	layout.BaseView
-	Timer    timerView
-	Summary  reporting.DashboardSummary
-	Projects []projects.Project
+	// DashboardState drives the three-state dispatcher in
+	// web/templates/dashboard.html. Values: "zero" (no projects — workspace
+	// is fresh or fully cleaned up), "running" (a timer is currently
+	// running), "idle" (projects exist, no running timer). See
+	// openspec/specs/ui-partials/spec.md (Dashboard surface renders three
+	// documented states).
+	DashboardState string
+	Timer          timerView
+	Summary        reporting.DashboardSummary
+	Projects       []projects.Project
+}
+
+// dashboardStateFor derives the state from the three inputs named in the
+// ui-partials spec scenarios. Extracted so handler-level tests can assert
+// state transitions without exercising the full render.
+func dashboardStateFor(projectCount int, timerRunning bool) string {
+	if timerRunning {
+		return "running"
+	}
+	if projectCount == 0 {
+		return "zero"
+	}
+	return "idle"
 }
 
 type timerView struct {
@@ -156,10 +176,11 @@ func (h *Handler) dashboard(w http.ResponseWriter, r *http.Request) {
 	summary, _ := h.reportSvc.Dashboard(r.Context(), wc.WorkspaceID, wc.UserID, time.Now())
 	base, _ := h.lay.Base(r, "dashboard")
 	_ = h.tpls.Render(w, http.StatusOK, "dashboard", dashboardView{
-		BaseView: base,
-		Timer:    timerView{CSRFToken: base.CSRFToken, Running: running, Projects: ps},
-		Summary:  summary,
-		Projects: ps,
+		BaseView:       base,
+		DashboardState: dashboardStateFor(len(ps), running != nil),
+		Timer:          timerView{CSRFToken: base.CSRFToken, Running: running, Projects: ps},
+		Summary:        summary,
+		Projects:       ps,
 	})
 }
 
