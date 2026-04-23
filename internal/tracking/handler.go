@@ -177,7 +177,7 @@ func (h *Handler) renderTimer(w http.ResponseWriter, r *http.Request, status int
 	wc := authz.MustFromContext(r.Context())
 	running, _ := h.svc.GetRunning(r.Context(), wc.WorkspaceID, wc.UserID)
 	ps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
-	_ = h.tpls.RenderPartial(w, status, "dashboard", "timer_widget", timerView{
+	_ = h.tpls.RenderPartial(w, status, "dashboard", "timer_control", timerView{
 		CSRFToken: csrf.Token(r), Running: running, Projects: ps, Error: errMsg, ErrorCode: errCode,
 	})
 }

@@ -44,9 +44,9 @@
     <td>{{if .Entry.Description}}{{.Entry.Description}}{{else}}<span class="muted">—</span>{{end}}</td>
     <td class="num tabular">{{formatDuration .Entry.DurationSeconds}}</td>
     <td>
-      {{if .Entry.IsBillable}}<span class="badge badge-billable">Billable</span>
-      {{else}}<span class="muted">Non-billable</span>{{end}}
-      {{if not .Entry.EndedAt}}<span class="badge badge-running">&#9679; Running</span>{{end}}
+      {{if .Entry.IsBillable}}{{template "status_chip" (dict "Kind" "billable" "Label" "Billable" "Variant" "filled")}}
+      {{else}}{{template "status_chip" (dict "Kind" "non-billable" "Label" "Non-billable" "Variant" "outlined")}}{{end}}
+      {{if not .Entry.EndedAt}}{{template "status_chip" (dict "Kind" "running" "Label" "Running" "Variant" "filled")}}{{end}}
     </td>
     <td class="row" style="justify-content:flex-end">
       <button type="button" class="btn btn-ghost" data-focus-after-swap

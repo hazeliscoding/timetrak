@@ -302,10 +302,17 @@ rate-rule form.
 
 - `docs/timetrak_ui_style_guide.md#microcopy` — the style guide's short
   microcopy section; this document is the expanded companion.
+- `docs/timetrak_ui_style_guide.md#component-identity-stage-3` — the
+  component-identity contracts (shape language, two-weight borders,
+  tabular-nums, accent rationing, timer-as-signature-object) that tie
+  the brand's "calm but crafted" register to concrete review rules.
 - `openspec/specs/ui-partials/spec.md` — accepted behavior for the
   `brandmark` partial and the rest of the partial catalogue.
 - `openspec/specs/ui-showcase/spec.md` — accepted behavior for the
   component showcase, including the `brand` sub-surface.
+- `openspec/specs/ui-component-identity/spec.md` — accepted
+  component-identity contracts enforced at review and by the CSS
+  audit test.
 
 Deferred follow-ups tracked in the proposal's Impact section and *not
 committed* by this document:

@@ -1,21 +1,22 @@
-{{define "timer_widget"}}
-<section id="timer-widget" class="timer" aria-live="polite" aria-label="Timer">
+{{define "timer_control"}}
+<section id="timer-control" class="tt-timer{{if .Running}} tt-timer-running{{end}}" aria-live="polite" aria-label="Timer">
   {{if .Running}}
-    <div>
-      <div class="muted" style="font-size:.875rem">
-        <span class="badge badge-running" aria-label="Running">&#9679; Running</span>
-        {{.Running.ClientName}} — <strong>{{.Running.ProjectName}}</strong>
+    <span class="tt-timer-dot" aria-hidden="true"></span>
+    <div class="tt-timer-body">
+      <div class="tt-timer-meta">
+        <span class="muted">{{.Running.ClientName}}</span>
+        <strong>{{.Running.ProjectName}}</strong>
         {{if .Running.Description}}<span class="muted">· {{.Running.Description}}</span>{{end}}
       </div>
-      <div class="elapsed" data-timer-started-at="{{iso .Running.StartedAt}}">00:00:00</div>
-      <div class="muted" style="font-size:.8125rem">Started {{formatTime .Running.StartedAt}}</div>
+      <div class="tt-timer-elapsed tabular" data-timer-started-at="{{iso .Running.StartedAt}}">00:00:00</div>
+      <div class="muted tt-timer-started">Started {{formatTime .Running.StartedAt}}</div>
     </div>
-    <form hx-post="/timer/stop" hx-target="#timer-widget" hx-swap="outerHTML" style="margin-left:auto">
+    <form hx-post="/timer/stop" hx-target="#timer-control" hx-swap="outerHTML" class="tt-timer-stop">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
-      <button class="btn btn-primary" type="submit" data-focus-after-swap>Stop timer</button>
+      <button class="btn btn-ghost" type="submit" data-focus-after-swap>Stop timer</button>
     </form>
   {{else}}
-    <form hx-post="/timer/start" hx-target="#timer-widget" hx-swap="outerHTML" class="row" style="flex:1">
+    <form hx-post="/timer/start" hx-target="#timer-control" hx-swap="outerHTML" class="row tt-timer-start-form" style="flex:1">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
       <div class="field" style="flex:1;min-width:180px;margin-bottom:0">
         <label for="start-project">Project</label>

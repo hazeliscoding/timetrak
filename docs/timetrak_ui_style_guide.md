@@ -558,6 +558,116 @@ The component library should feel:
 
 ---
 
+## Component Identity (Stage 3)
+
+The `sharpen-component-identity` change (accepted via
+`openspec/specs/ui-component-identity/spec.md`) adds a small, load-bearing
+set of authoring contracts on top of the tokens and partials system.
+Components remain calm and tool-like — but each is *opinionated* and
+recognizable within that register.
+
+These rules are enforceable: a CSS audit test, the `/dev/showcase`
+gallery, and PR review all check them. Violations block merge.
+
+### Shape-language taxonomy
+
+Three shapes, three semantics. Do not mix them.
+
+| Shape | Token | Semantic |
+|---|---|---|
+| Pill (fully rounded) | `var(--radius-pill)` | Actions — buttons, timer control |
+| Rectangle | `var(--radius-sm)` | Status / metadata — chips, badges, tags |
+| Circle | `50%` | Presence dots — running indicator, avatar fallback |
+
+A chip is never a pill. A button is never a rectangle. A new shape
+requires a change proposal that amends
+`ui-component-identity.Shape language taxonomy`.
+
+### Two-weight border contract
+
+Every surface edge is either:
+
+- **1px solid `var(--color-border)`** — structure, at-rest (cards,
+  inputs at rest, table horizontal dividers).
+- **2px solid `var(--color-accent)` or `var(--color-danger)`** —
+  state (focus, selection, running, error).
+
+Nothing between 1px and 2px. No dashed, double, inset, or outset
+borders. No shadow elevation as a substitute for a border.
+
+### Numeric text contract
+
+Every element that renders a duration, amount, rate, or integer count
+MUST apply `font-variant-numeric: tabular-nums`. In tables, numeric
+columns are marked with `.col-num` (or
+`[data-col-kind="numeric"]`) and render right-aligned. In cards and
+inline contexts they remain left-aligned but retain tabular numerals.
+
+Examples requiring `tabular-nums`: timer elapsed `HH:MM:SS`, Duration
+column, Hourly rate column, Amount column, dashboard `Billable this
+week` figure.
+
+### Accent rationing
+
+The accent color family (`var(--color-accent*)`) is permitted only on
+surfaces that answer a "which one?" question for the user:
+
+1. The running-timer fill, 2px border, leading dot, and elapsed readout.
+2. The focus ring.
+3. The selected/focused table-row 2px inside-left edge rule.
+4. The primary button fill, border, and hover (`.btn-primary`).
+5. Link text and link hover (`a`, `a:hover`).
+6. The active/current navigation item
+   (`.nav a[aria-current="page"]` — accent-soft fill + accent text +
+   accent left-edge rule).
+7. Billable and running status chips (`.tt-chip-billable`,
+   `.tt-chip-running`).
+8. The running-entry card top border (reserved for the follow-on
+   `sharpen-dashboard-and-empty-states` change).
+
+Any other accent usage fails review and the CSS audit test. Secondary
+buttons, chips that aren't `billable`/`running`, hover states, at-rest
+inputs, table headers, and at-rest cards all use neutral tokens. The
+underlying principle: accent answers "which one?" — spread it across
+generic chrome and it stops answering anything.
+
+### Timer as signature object
+
+The timer is not a styled button — it is its own partial
+(`partials/timer_control`) with a documented state machine
+(`idle → running → idle`). Idle is a neutral pill with a leading
+neutral dot. Running inverts: `var(--color-accent-soft)` fill, 2px
+`var(--color-accent)` border, pulsing accent dot (static under
+`prefers-reduced-motion: reduce`), tabular-nums elapsed time, and a
+distinct `Stop` affordance that is visually *not* the same pill as the
+idle start. The timer is the only surface in the app that uses accent
+as a fill.
+
+### Review checklist
+
+Every UI-affecting PR is reviewed against these five questions. Cite
+the specific item being addressed or consciously waived in the PR
+description.
+
+1. **Shape** — does the component use the correct shape from the
+   taxonomy? (`ui-component-identity.Shape language taxonomy`)
+2. **Border weight** — does every border conform to the two-weight
+   contract (1px structure / 2px state)?
+   (`ui-component-identity.Two-weight border contract`)
+3. **Numerics** — does every duration, amount, rate, or count render
+   with `tabular-nums`? (`ui-component-identity.Numeric text contract`)
+4. **Accent** — is the accent color consumed only on an allow-listed
+   surface? (`ui-component-identity.Accent rationing`)
+5. **State coverage** — does every state (default, hover, focused,
+   selected, error, empty, running where applicable) render in
+   `/dev/showcase`? (`ui-component-identity.Component identity review
+   checklist`)
+
+The `/dev/showcase` index renders this checklist above the gallery so
+reviewers can cross-reference live components against the contract.
+
+---
+
 ## Visual Anti-Patterns to Avoid
 
 - too many gradients

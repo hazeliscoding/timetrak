@@ -26,7 +26,7 @@
     <td class="num">{{.Client.ProjectCount}}</td>
     <td>
       {{if .Client.IsArchived}}
-        <span class="badge badge-archived" aria-label="Archived">Archived</span>
+        {{template "status_chip" (dict "Kind" "archived" "Label" "Archived" "Variant" "outlined")}}
       {{else}}
         <span class="muted">Active</span>
       {{end}}

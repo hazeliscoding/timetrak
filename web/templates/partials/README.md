@@ -14,6 +14,13 @@ order, `tt-<component>` naming, focus / target-size / status rules)
 live in [`web/static/css/README.md`](../../static/css/README.md). When
 adding a partial that ships new CSS, follow that contract.
 
+**Component identity.** Partial markup and the CSS it ships MUST
+satisfy the component-identity contracts (shape language, two-weight
+borders, tabular-nums, accent rationing) documented in
+[`docs/timetrak_ui_style_guide.md`](../../../docs/timetrak_ui_style_guide.md#component-identity-stage-3)
+and codified in
+[`openspec/specs/ui-component-identity/spec.md`](../../../openspec/specs/ui-component-identity/spec.md).
+
 ## Conventions
 
 ### File and block naming
@@ -196,6 +203,34 @@ color alone.
 
 ---
 
+### `status_chip`
+
+Rectangular status/metadata indicator. Pills are reserved for actions; chips
+are rectangles (`--radius-sm`). Every kind pairs color with a glyph or text
+so status is never conveyed by color alone. Defined by
+`openspec/specs/ui-component-identity/spec.md` and the `ui-partials`
+delta in the `sharpen-component-identity` change.
+
+**Context keys:**
+
+| Key       | Required | Default | Notes                                                                          |
+| --------- | -------- | ------- | ------------------------------------------------------------------------------ |
+| `Kind`    | yes      | —       | One of `billable`, `non-billable`, `running`, `draft`, `archived`, `warning`.  |
+| `Label`   | yes      | —       | Human-readable text.                                                           |
+| `Variant` | yes      | —       | `filled` (soft accent/warning fill) or `outlined` (neutral border).            |
+| `Glyph`   | no       | kind-specific | Leading glyph. When `Kind` conveys state (`running`, `archived`, `draft`, `warning`) a default glyph is rendered when omitted. |
+
+**Default glyphs:** `running` = ●, `archived` = ⊘, `draft` = ○, `warning` = ⚠.
+`billable` / `non-billable` render without a glyph (label is explicit).
+
+**Accessibility:** `aria-label` is set for `running` and `archived` so
+assistive tech announces state even when the glyph is decorative. The glyph
+carries non-color conveyance as required by WCAG 2.2 (status never color-only).
+
+**Event contract:** neither emits nor listens.
+
+---
+
 ### `empty_state`
 
 Copy-first empty block. Used when a list, table, or filtered result has no
@@ -328,16 +363,21 @@ See individual files for the context shapes (`.Client`/`.Project`/`.Entry`/
 Rates domain composites. `rate_form` supports `hx-swap-oob="true"` via `.OOB`.
 `rates_table` renders the full `#rates-table` region (list + empty state).
 
-### `timer_widget`
+### `timer_control`
 
-Dashboard timer control. Emits `timer-changed, entries-changed` on start/stop
-via its form posts. Listens indirectly: peer partials listen for its events.
+Dashboard timer control — the app's signature pill. Idle state renders a
+start-entry form (project picker, description, `.btn-primary` Start pill).
+Running state renders a single accent-filled pill with 2px accent border,
+pulsing leading dot, tabular-nums elapsed time, and a distinct `.btn-ghost`
+Stop control. Emits `timer-changed, entries-changed` on start/stop via its
+form posts. Listens indirectly: peer partials listen for its events. See
+`openspec/specs/ui-component-identity/spec.md` for the identity contract.
 
 ### `tracking_error`
 
 Shared inline error region for tracking integrity failures (active-timer
 conflict, cross-workspace project, invalid interval). Consumed by
-`timer_widget` and `entry_row`. `role="alert"`, `tabindex="-1"`,
+`timer_control` and `entry_row`. `role="alert"`, `tabindex="-1"`,
 `data-focus-after-swap`.
 
 ### `dashboard_summary`
@@ -356,12 +396,21 @@ filter changes and `workspace-changed`.
 
 Two shared-looking patterns were intentionally NOT extracted this pass:
 
-- **`table_shell`** — each domain table has a unique `<thead>` and row
-  template. Go `html/template` cannot accept HTML blocks as slots without
-  adding a `safeHTML`-style helper, and the wrapper boilerplate is only ~5
-  lines per domain. Extracting it would either require a new template func
-  or force ugly string-as-HTML passing. Revisit if a token change needs a
-  single place to tweak table chrome.
+- **`table_shell`** — the `sharpen-component-identity` change (2026-04-23)
+  replaces the wrapper-partial proposal with a canonical `.table` CSS
+  contract in `web/static/css/app.css`. Every domain list uses
+  `<table class="table">` directly and inherits: hairline horizontal
+  dividers, uppercase letterspaced `<thead>` styling, no vertical
+  dividers, no zebra striping, hover via `tbody tr:hover`, selected /
+  focused row as a 2px accent inside-left rule
+  (`aria-selected="true"` or `:focus-within`), and `.col-num`/`.num`
+  right-aligned `tabular-nums` for numeric columns. See
+  `openspec/specs/ui-partials/spec.md` (Table shell and empty state
+  contract) and `openspec/specs/ui-component-identity/spec.md`
+  (Two-weight border contract, Numeric text contract). A slot-helper
+  partial was not extracted — Go `html/template` cannot accept HTML
+  blocks as slots without new template machinery, and per-domain
+  `<thead>` colocation is intentional.
 - **`filter_bar`** — filter control sets vary per domain and share only the
   outer `<form class="card">` wrapper plus optional `hx-trigger` debounce.
   The savings (one line per domain) did not meet the extraction bar. The

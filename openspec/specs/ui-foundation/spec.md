@@ -12,7 +12,6 @@ invariant that status is never conveyed by color alone, the
 deprecation-and-migration rule for evolving tokens, and the
 authoring-contract documentation that makes these rules reviewable at
 PR time.
-
 ## Requirements
 ### Requirement: Two-Layer Token Taxonomy
 
@@ -44,7 +43,7 @@ New semantic aliases MUST NOT be added without a change proposal that extends th
 TimeTrak SHALL define scale tokens for spacing, radius, typography, motion, elevation, z-index layers, and breakpoints as CSS custom properties. Components SHALL reference scale tokens and MUST NOT use raw numeric values for these concerns.
 
 - **Spacing** MUST be an 8px-based scale (`--space-1` = 4px through `--space-8` = 48px or equivalent named set documented in the token file).
-- **Radius** MUST provide at minimum `--radius-sm` (small controls, inputs, buttons) and `--radius-md` (larger cards, modals).
+- **Radius** MUST provide at minimum `--radius-sm` (small controls, inputs, chips, badges), `--radius-md` (larger cards, modals), and `--radius-pill` (fully rounded actions — buttons, timer control). Components authoring pill-shaped actions MUST reference `var(--radius-pill)` and MUST NOT use raw `999px` or equivalent literal values.
 - **Typography** MUST define a font-family token pair (`--font-sans`, `--font-mono`) and a documented static size / weight / line-height set. Fluid or clamp-based scales are out of scope.
 - **Motion** MUST define at least one duration token (e.g. `--motion-duration-fast`) and one easing token (e.g. `--motion-easing-standard`). All motion-using components MUST be collapsed to instant transitions under `@media (prefers-reduced-motion: reduce)`.
 - **Elevation** MUST define `--shadow-none`, `--shadow-sm`, `--shadow-md`. Cards default to `--shadow-none` with a border; shadows above `--shadow-md` require a change proposal.
@@ -65,6 +64,11 @@ TimeTrak SHALL define scale tokens for spacing, radius, typography, motion, elev
 
 - **WHEN** a reviewer sees a component CSS rule using a raw `box-shadow` value instead of `var(--shadow-*)`
 - **THEN** the review blocks the change and requires either adopting an existing shadow token or proposing a new one via a foundation change.
+
+#### Scenario: Component authors a pill-shaped action
+
+- **WHEN** a button or the timer control is authored with `border-radius: 999px` or `border-radius: 9999px`
+- **THEN** the review blocks the change until the rule references `var(--radius-pill)`.
 
 ### Requirement: CSS Layer Order
 
@@ -172,3 +176,4 @@ The document MUST state explicitly that during any transition period where `docs
 
 - **WHEN** `docs/timetrak_ui_style_guide.md` quotes a token name or rule that differs from `web/static/css/tokens.css`
 - **THEN** the codified CSS + this spec win, and the style guide MUST be updated in a follow-up change.
+

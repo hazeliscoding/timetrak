@@ -17,6 +17,15 @@ tokens, the codified tokens win.
 **Sibling doc.** Server-rendered partial conventions and the HTMX event
 contract live in [`web/templates/partials/README.md`](../../templates/partials/README.md).
 
+**Component identity.** The component-level visual grammar — shape
+language (pill/rectangle/circle), two-weight border contract,
+`tabular-nums` requirement, accent-rationing allow-list, and the
+five-item review checklist — is documented in
+[`docs/timetrak_ui_style_guide.md`](../../../docs/timetrak_ui_style_guide.md#component-identity-stage-3)
+and codified in
+[`openspec/specs/ui-component-identity/spec.md`](../../../openspec/specs/ui-component-identity/spec.md).
+CSS authored in this directory MUST satisfy those contracts.
+
 ---
 
 ## 1. Two-layer token model
@@ -65,7 +74,13 @@ a `--color-on-accent` alias in a foundation change.
 Components **MUST** consume scale tokens instead of raw numeric values.
 
 - **Spacing** — `--space-1` (4px) through `--space-8` (48px).
-- **Radius** — `--radius-sm` (controls), `--radius-md` (cards).
+- **Radius** — `--radius-sm` (inputs, chips, badges, small rectangular
+  controls), `--radius-md` (cards, modals), `--radius-pill` (pill-shaped
+  actions — buttons, timer control). The three values encode the
+  shape-language taxonomy in
+  `openspec/specs/ui-component-identity/spec.md`: pills = actions,
+  rectangles = status/metadata, circles (`50%`) = presence dots. Do
+  NOT use raw `999px` or equivalent literals for pill shapes.
 - **Typography** — `--font-sans`, `--font-mono`. Static size scale in
   rem (`1rem`, `1.175rem`, `1.5rem`, `1.75rem`). No clamp-based fluid
   scales.
@@ -97,7 +112,9 @@ Components **MUST** consume scale tokens instead of raw numeric values.
 - `components` — `.app-shell`, `.nav`, `.btn`, `.field`, `.table`,
   `.card`, `.badge`, `.flash`, `.timer`, `.empty`, and all new `tt-*`
   components.
-- `utilities` — `.num`, `.stack`, `.row`, `.row-between`, `.mt-0`,
+- `utilities` — `.num` / `.col-num` (canonical — numeric column
+  treatment: `tabular-nums` + right-aligned), `.stack`, `.row`,
+  `.row-between`, `.mt-0`,
   `.mb-0`.
 - `overrides` — reserved, empty at foundation landing.
 

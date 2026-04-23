@@ -17,7 +17,7 @@
 
 {{if gt .Report.NoRateCount 0}}
   <div class="flash" role="status">
-    <span class="badge badge-warning">No rate</span>
+    {{template "status_chip" (dict "Kind" "warning" "Label" "No rate" "Variant" "filled")}}
     {{.Report.NoRateCount}} billable entr{{if eq .Report.NoRateCount 1}}y{{else}}ies{{end}} in this range had no resolved rate and contributed 0.
   </div>
 {{end}}
@@ -58,7 +58,7 @@
     <tbody>
       {{range .Report.ByClient}}
         <tr>
-          <th scope="row">{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</th>
+          <th scope="row">{{.Label}} {{if .Archived}}{{template "status_chip" (dict "Kind" "archived" "Label" "Archived" "Variant" "outlined")}}{{end}}</th>
           <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
           <td class="num tabular">{{formatDuration .BillableSeconds}}</td>
           <td class="num tabular">{{formatDuration .NonBillableSeconds}}</td>
@@ -84,7 +84,7 @@
     <tbody>
       {{range .Report.ByProject}}
         <tr>
-          <th scope="row">{{.Label}} {{if .Archived}}<span class="badge badge-archived">Archived</span>{{end}}</th>
+          <th scope="row">{{.Label}} {{if .Archived}}{{template "status_chip" (dict "Kind" "archived" "Label" "Archived" "Variant" "outlined")}}{{end}}</th>
           <td>{{.ClientLabel}}</td>
           <td class="num tabular">{{formatDuration .TotalSeconds}}</td>
           <td class="num tabular">{{formatDuration .BillableSeconds}}</td>

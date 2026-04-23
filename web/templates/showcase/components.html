@@ -94,6 +94,68 @@
     </section>
   {{end}}
 
+  <section class="card" id="entry-table-states" aria-labelledby="entry-table-states-title">
+    <h2 id="entry-table-states-title" class="mt-0"><code>.table</code> — visual states</h2>
+    <p>
+      The data table is a CSS contract on the shared <code>.table</code> class
+      rather than a wrapper partial. Every domain list (entries, clients,
+      projects, rate rules, reports) inherits this treatment.
+      See <code>openspec/specs/ui-partials/spec.md</code> (Table shell and
+      empty state contract) and
+      <code>openspec/specs/ui-component-identity/spec.md</code>.
+    </p>
+
+    <section id="entry-table-states-default" class="stack" aria-labelledby="entry-table-states-default-title" style="margin-top:var(--space-5)">
+      <h3 id="entry-table-states-default-title" style="font-size:1rem">Default, hover, selected / focused — and a numeric column</h3>
+      <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)">
+        <table class="table" aria-label="Table visual states demo">
+          <caption class="sr-only">Table states demo — rows illustrate default, hover (simulate by pointing), selected via aria-selected, and a numeric column.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Client</th>
+              <th scope="col">Project</th>
+              <th scope="col" class="col-num">Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Acme Co</th>
+              <td>Website redesign</td>
+              <td class="col-num">03:15:22</td>
+            </tr>
+            <tr aria-selected="true">
+              <th scope="row">Globex</th>
+              <td>Q2 rollout</td>
+              <td class="col-num">01:48:07</td>
+            </tr>
+            <tr>
+              <th scope="row">Initech</th>
+              <td>Cover sheet audit</td>
+              <td class="col-num">00:42:59</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top:var(--space-3);font-size:.875rem">
+          Row 2 carries <code>aria-selected="true"</code> — note the 2px accent
+          inside-left edge rendered via <code>box-shadow: inset 2px 0 0 0
+          var(--color-accent)</code>. Hover any row to see the row-level
+          background change (no border shift). Duration is a <code>.col-num</code>
+          column: <code>tabular-nums</code> + right-aligned.
+        </p>
+      </div>
+    </section>
+
+    <section id="entry-table-states-empty" class="stack" aria-labelledby="entry-table-states-empty-title" style="margin-top:var(--space-5)">
+      <h3 id="entry-table-states-empty-title" style="font-size:1rem">Empty state (via <code>partials/empty_state</code>)</h3>
+      <div class="showcase-example-frame" style="padding:var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface)">
+        {{template "empty_state" (dict
+          "Title" "No entries match these filters"
+          "Body" "Try a different preset, widen the dates, or clear a filter."
+          "Live" true)}}
+      </div>
+    </section>
+  </section>
+
   <p>
     <a href="/dev/showcase">Back to showcase index</a> ·
     <a href="/dev/showcase/tokens">Tokens catalogue</a>

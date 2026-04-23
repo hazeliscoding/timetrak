@@ -18,8 +18,8 @@ import (
 // leave focus on something carrying [data-focus-after-swap].
 //
 // Scenarios covered (per partials/README.md and the shipped partials):
-//   - timer start (timer_widget)
-//   - timer stop  (timer_widget)
+//   - timer start (timer_control)
+//   - timer stop  (timer_control)
 //   - entry edit (entry_row, Edit mode)
 //   - client create via inline form (client_row + form_errors path)
 //   - client edit (client_row, Edit mode)

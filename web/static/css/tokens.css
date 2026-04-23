@@ -143,9 +143,13 @@
   --space-7: 40px;
   --space-8: 48px;
 
-  /* Radius. */
-  --radius-sm: 8px;
-  --radius-md: 12px;
+  /* Radius. --radius-pill is the canonical fully-rounded value for
+     action-shaped controls (buttons, timer control). Chips and badges
+     are rectangles and MUST use --radius-sm — not --radius-pill. See
+     openspec/specs/ui-component-identity/spec.md (Shape language). */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-pill: 999px;
 
   /* Typography. Static scale — no clamp-based fluid sizes. */
   --font-sans: Inter, "Helvetica Neue", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

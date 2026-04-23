@@ -210,6 +210,45 @@ var ComponentEntries = []ComponentEntry{
 		},
 	},
 	{
+		ID:          "status-chip",
+		Name:        "status_chip",
+		PartialName: "status_chip",
+		SourcePath:  "web/templates/partials/status_chip.html",
+		SpecRef:     "openspec/specs/ui-component-identity/spec.md",
+		Purpose:     "Rectangular status/metadata indicator. Pills are reserved for actions; chips are rectangles. Every kind pairs color with a glyph or explicit label so status is never color-only.",
+		DictKeys: []DictKeyDoc{
+			{Name: "Kind", Required: true, Note: "One of: billable, non-billable, running, draft, archived, warning."},
+			{Name: "Label", Required: true, Note: "Human-readable text."},
+			{Name: "Variant", Required: true, Note: "filled (soft accent/warning fill) or outlined (neutral border)."},
+			{Name: "Glyph", Required: false, Default: "kind-specific", Note: "Leading glyph. State-conveying kinds (running, archived, draft, warning) render a default glyph when omitted."},
+		},
+		Examples: []ComponentExample{
+			{ID: "billable", Label: "billable · filled", PartialName: "status_chip", SnippetID: "status_chip.billable", Dict: map[string]any{
+				"Kind": "billable", "Label": "Billable", "Variant": "filled",
+			}},
+			{ID: "non-billable", Label: "non-billable · outlined", PartialName: "status_chip", SnippetID: "status_chip.non_billable", Dict: map[string]any{
+				"Kind": "non-billable", "Label": "Non-billable", "Variant": "outlined",
+			}},
+			{ID: "running", Label: "running · filled (glyph = ●)", PartialName: "status_chip", SnippetID: "status_chip.running", Dict: map[string]any{
+				"Kind": "running", "Label": "Running", "Variant": "filled",
+			}},
+			{ID: "archived", Label: "archived · outlined (glyph = ⊘)", PartialName: "status_chip", SnippetID: "status_chip.archived", Dict: map[string]any{
+				"Kind": "archived", "Label": "Archived", "Variant": "outlined",
+			}},
+			{ID: "draft", Label: "draft · outlined (glyph = ○)", PartialName: "status_chip", SnippetID: "status_chip.draft", Dict: map[string]any{
+				"Kind": "draft", "Label": "Draft", "Variant": "outlined",
+			}},
+			{ID: "warning", Label: "warning · filled (glyph = ⚠)", PartialName: "status_chip", SnippetID: "status_chip.warning", Dict: map[string]any{
+				"Kind": "warning", "Label": "No rate", "Variant": "filled",
+			}},
+		},
+		A11yNotes: []string{
+			"Status is never conveyed by color alone. State-conveying kinds (running, archived, draft, warning) pair color with a glyph; billable/non-billable rely on explicit label text.",
+			"aria-label is set for running and archived so assistive tech announces state.",
+			"Shape language: chips are rectangular (--radius-sm). Pills are reserved for actions (buttons, timer).",
+		},
+	},
+	{
 		ID:          "empty-state",
 		Name:        "empty_state",
 		PartialName: "empty_state",
@@ -515,35 +554,37 @@ var ComponentEntries = []ComponentEntry{
 		},
 	},
 	{
-		ID:          "timer-widget",
-		Name:        "timer_widget",
-		PartialName: "timer_widget",
-		SourcePath:  "web/templates/partials/timer_widget.html",
-		SpecRef:     "openspec/specs/tracking/spec.md",
-		Purpose:     "Dashboard timer control. Emits timer-changed, entries-changed on start/stop.",
+		ID:          "timer-control",
+		Name:        "timer_control",
+		PartialName: "timer_control",
+		SourcePath:  "web/templates/partials/timer_control.html",
+		SpecRef:     "openspec/specs/ui-component-identity/spec.md",
+		Purpose:     "The app's signature pill. Idle renders a start-entry form; running renders a single accent-filled pill with 2px accent border, pulsing dot, and tabular-nums elapsed time. Emits timer-changed and entries-changed on start/stop.",
 		DictKeys: []DictKeyDoc{
-			{Name: "Running", Required: false, Default: "nil", Note: "When non-nil, renders the \"Running\" view (ClientName, ProjectName, Description, StartedAt)."},
-			{Name: "Projects", Required: false, Default: "nil", Note: "Project options when the widget is idle."},
+			{Name: "Running", Required: false, Default: "nil", Note: "When non-nil, renders the running pill (ClientName, ProjectName, Description, StartedAt)."},
+			{Name: "Projects", Required: false, Default: "nil", Note: "Project options when the control is idle."},
 			{Name: "CSRFToken", Required: true, Note: "CSRF token."},
 			{Name: "Error", Required: false, Default: "", Note: "Fallback error copy (used when ErrorCode is empty)."},
 			{Name: "ErrorCode", Required: false, Default: "", Note: "Tracking error taxonomy code; delegates to tracking_error."},
 		},
 		Examples: []ComponentExample{
-			{ID: "idle", Label: "Idle (start view)", PartialName: "timer_widget", SnippetID: "timer_widget.idle", Dict: map[string]any{
+			{ID: "idle", Label: "Idle (start form)", PartialName: "timer_control", SnippetID: "timer_control.idle", Dict: map[string]any{
 				"Running": nil,
 				"Projects": []map[string]any{
 					{"ID": demoProjectID.String(), "ClientName": "Acme Co", "Name": "Website redesign"},
 				},
 				"CSRFToken": fakeCSRFToken,
 			}},
-			{ID: "running", Label: "Running", PartialName: "timer_widget", SnippetID: "timer_widget.running", Dict: map[string]any{
+			{ID: "running", Label: "Running (accent pill + pulsing dot)", PartialName: "timer_control", SnippetID: "timer_control.running", Dict: map[string]any{
 				"Running":   demoRunning(),
 				"CSRFToken": fakeCSRFToken,
 			}},
 		},
 		A11yNotes: []string{
 			"aria-live=\"polite\" on the section wrapper so state changes are announced.",
-			"Running badge uses text + a shape glyph; color is never the only signal.",
+			"Running dot is aria-hidden; state is conveyed by the accent fill, elapsed readout, and the distinct Stop control.",
+			"Pulsing dot halts under prefers-reduced-motion via the global animation-none rule, leaving a static accent dot.",
+			"Stop button uses .btn-ghost so it is visually distinct from the idle .btn-primary Start pill.",
 		},
 	},
 	{
@@ -552,7 +593,7 @@ var ComponentEntries = []ComponentEntry{
 		PartialName: "tracking_error",
 		SourcePath:  "web/templates/partials/tracking_error.html",
 		SpecRef:     "openspec/specs/tracking/spec.md",
-		Purpose:     "Shared inline error region for tracking integrity failures (active-timer conflict, cross-workspace project, invalid interval). Consumed by timer_widget and entry_row.",
+		Purpose:     "Shared inline error region for tracking integrity failures (active-timer conflict, cross-workspace project, invalid interval). Consumed by timer_control and entry_row.",
 		DictKeys: []DictKeyDoc{
 			{Name: "ErrorCode", Required: true, Note: "Stable taxonomy code (e.g. tracking.active_timer)."},
 			{Name: "Message", Required: true, Note: "Domain-specific copy for humans."},

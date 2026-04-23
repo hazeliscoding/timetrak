@@ -17,6 +17,52 @@
     </ul>
   </nav>
 
+  <section class="card" aria-labelledby="identity-checklist-title" data-ui="component-identity-checklist">
+    <h2 id="identity-checklist-title" class="mt-0">Component identity review checklist</h2>
+    <p>
+      Every UI-affecting PR is reviewed against these five questions. Cite the
+      specific item being addressed or consciously waived in the PR description.
+      Full detail lives in <code>docs/timetrak_ui_style_guide.md</code>
+      (§ Component Identity) and <code>openspec/specs/ui-component-identity/spec.md</code>.
+    </p>
+    <ol>
+      <li data-checklist-item="shape">
+        <strong>Shape</strong> — does the component use the correct shape from
+        the taxonomy? Pills = actions (buttons, timer). Rectangles = status /
+        metadata (chips, badges). Circles = presence dots.
+        <span class="muted">(Shape language taxonomy)</span>
+      </li>
+      <li data-checklist-item="border">
+        <strong>Border weight</strong> — does every border conform to the
+        two-weight contract? 1px <code>var(--color-border)</code> for
+        structure at rest; 2px <code>var(--color-accent)</code> or
+        <code>var(--color-danger)</code> for state.
+        <span class="muted">(Two-weight border contract)</span>
+      </li>
+      <li data-checklist-item="numerics">
+        <strong>Numerics</strong> — does every duration, amount, rate, or
+        count render with <code>font-variant-numeric: tabular-nums</code>?
+        Numeric table columns use <code>.col-num</code> and render
+        right-aligned.
+        <span class="muted">(Numeric text contract)</span>
+      </li>
+      <li data-checklist-item="accent">
+        <strong>Accent</strong> — is the accent color consumed only on an
+        allow-listed surface? (running timer; focus ring; selected-row edge;
+        <code>.btn-primary</code>; links; active nav item; billable /
+        running chips.) Secondary buttons, at-rest non-billable chips,
+        hover states, and at-rest inputs use neutral tokens.
+        <span class="muted">(Accent rationing)</span>
+      </li>
+      <li data-checklist-item="states">
+        <strong>State coverage</strong> — does every state (default, hover,
+        focused, selected, error, empty, running where applicable) render
+        in <code>/dev/showcase</code>?
+        <span class="muted">(Component identity review checklist)</span>
+      </li>
+    </ol>
+  </section>
+
   <section class="card" aria-labelledby="contrib-guide-title">
     <h2 id="contrib-guide-title" class="mt-0">Contribution guide</h2>
     <p>

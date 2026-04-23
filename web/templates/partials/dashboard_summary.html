@@ -4,18 +4,18 @@
     <div class="muted" style="font-size:.875rem">Today</div>
     <div class="elapsed tabular">{{formatDuration .TodayTotalSeconds}}</div>
     <div class="muted" style="font-size:.875rem">
-      <span class="badge badge-billable">Billable</span> {{formatDuration .TodayBillableSeconds}}
+      {{template "status_chip" (dict "Kind" "billable" "Label" "Billable" "Variant" "filled")}} {{formatDuration .TodayBillableSeconds}}
       &nbsp;·&nbsp;
-      <span class="badge">Non-billable</span> {{formatDuration .TodayNonBillableSeconds}}
+      {{template "status_chip" (dict "Kind" "non-billable" "Label" "Non-billable" "Variant" "outlined")}} {{formatDuration .TodayNonBillableSeconds}}
     </div>
   </div>
   <div class="card">
     <div class="muted" style="font-size:.875rem">This week</div>
     <div class="elapsed tabular">{{formatDuration .WeekTotalSeconds}}</div>
     <div class="muted" style="font-size:.875rem">
-      <span class="badge badge-billable">Billable</span> {{formatDuration .WeekBillableSeconds}}
+      {{template "status_chip" (dict "Kind" "billable" "Label" "Billable" "Variant" "filled")}} {{formatDuration .WeekBillableSeconds}}
       &nbsp;·&nbsp;
-      <span class="badge">Non-billable</span> {{formatDuration .WeekNonBillableSeconds}}
+      {{template "status_chip" (dict "Kind" "non-billable" "Label" "Non-billable" "Variant" "outlined")}} {{formatDuration .WeekNonBillableSeconds}}
     </div>
   </div>
   <div class="card">
@@ -30,7 +30,7 @@
       {{end}}
     </div>
     {{if gt .EntriesWithoutRate 0}}
-      <div class="muted" style="font-size:.875rem"><span class="badge badge-warning">No rate</span> {{.EntriesWithoutRate}} entr{{if eq .EntriesWithoutRate 1}}y{{else}}ies{{end}} without a resolved rate</div>
+      <div class="muted" style="font-size:.875rem">{{template "status_chip" (dict "Kind" "warning" "Label" "No rate" "Variant" "filled")}} {{.EntriesWithoutRate}} entr{{if eq .EntriesWithoutRate 1}}y{{else}}ies{{end}} without a resolved rate</div>
     {{end}}
   </div>
 </section>

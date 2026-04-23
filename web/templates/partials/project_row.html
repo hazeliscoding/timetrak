@@ -29,11 +29,11 @@
     <td>{{.Project.ClientName}}</td>
     <td>{{if .Project.Code}}<code>{{.Project.Code}}</code>{{else}}<span class="muted">—</span>{{end}}</td>
     <td>
-      {{if .Project.DefaultBillable}}<span class="badge badge-billable">Billable</span>
+      {{if .Project.DefaultBillable}}{{template "status_chip" (dict "Kind" "billable" "Label" "Billable" "Variant" "filled")}}
       {{else}}<span class="muted">Non-billable</span>{{end}}
     </td>
     <td>
-      {{if .Project.IsArchived}}<span class="badge badge-archived">Archived</span>
+      {{if .Project.IsArchived}}{{template "status_chip" (dict "Kind" "archived" "Label" "Archived" "Variant" "outlined")}}
       {{else}}<span class="muted">Active</span>{{end}}
     </td>
     <td class="row" style="justify-content:flex-end">

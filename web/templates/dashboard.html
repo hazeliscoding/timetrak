@@ -4,7 +4,7 @@
 <section class="stack">
   <h1>Dashboard</h1>
 
-  {{template "timer_widget" .Timer}}
+  {{template "timer_control" .Timer}}
 
   <div hx-get="/dashboard/summary" hx-trigger="timer-changed from:body, entries-changed from:body" hx-swap="outerHTML">
     {{template "dashboard_summary" .Summary}}
@@ -17,7 +17,7 @@
         {{range .Projects}}
           <li style="list-style:none">
             <strong>{{.ClientName}}</strong> · {{.Name}}
-            {{if .DefaultBillable}}<span class="badge badge-billable">Billable</span>{{end}}
+            {{if .DefaultBillable}}{{template "status_chip" (dict "Kind" "billable" "Label" "Billable" "Variant" "filled")}}{{end}}
           </li>
         {{end}}
       </ul>

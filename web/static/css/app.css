@@ -102,7 +102,7 @@
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
     padding: var(--space-2) var(--space-4); min-height: 36px; min-width: 44px;
-    border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-strong); border-radius: var(--radius-pill);
     background: var(--color-surface); color: var(--color-text);
     font: inherit; font-weight: 500; cursor: pointer;
   }
@@ -131,13 +131,33 @@
     border-color: var(--color-danger);
   }
 
-  /* Tables */
+  /* Tables — hairline horizontal dividers, uppercase letterspaced headers,
+     hover without border shift, selected row as a 2px accent left-edge rule.
+     See openspec/specs/ui-partials/spec.md (Table shell and empty state
+     contract) and openspec/specs/ui-component-identity/spec.md. */
   .table { width: 100%; border-collapse: collapse; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
   .table caption { text-align: left; padding: var(--space-3) var(--space-4); font-weight: 600; color: var(--color-text-muted); }
   .table th, .table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); text-align: left; }
-  .table th { background: var(--color-surface-alt); font-weight: 600; font-size: 0.875rem; color: var(--color-text-muted); }
+  .table thead th {
+    background: var(--color-surface-alt);
+    font-weight: 600; font-size: 0.75rem;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .table tbody th { font-weight: 600; font-size: 0.9375rem; }
   .table tr:last-child td { border-bottom: 0; }
-  .table tr:hover td { background: var(--color-surface-alt); }
+  .table tbody tr:hover { background: var(--color-surface-alt); }
+  .table tbody tr:hover td, .table tbody tr:hover th { background: transparent; }
+  /* Selected / focused row — 2px accent inside-left edge. No background fill,
+     no border shift on other edges. Driven by aria-selected or :focus-within. */
+  .table tbody tr[aria-selected="true"],
+  .table tbody tr:focus-within {
+    box-shadow: inset 2px 0 0 0 var(--color-accent);
+  }
+  /* Numeric column treatment. .col-num is the canonical class; legacy .num
+     also supported at cell level for existing call sites. */
+  .table .col-num,
+  .table [data-col-kind="numeric"],
   .table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
   /* Cards — borders-first elevation per CLAUDE.md. */
@@ -146,24 +166,86 @@
      token — keeping raw. Revisit if we add layout scale tokens. */
   .card-row { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 
-  /* Badges — status is carried by text; color is a supporting signal. */
+  /* Badge — grandfathered pill used in the dev-showcase dict-key tables
+     for "required" / "optional" markers. Domain status uses .tt-chip. */
   .badge {
     display: inline-flex; align-items: center; gap: var(--space-1);
-    padding: 2px var(--space-2); border-radius: 999px;
+    padding: 2px var(--space-2); border-radius: var(--radius-sm);
     font-size: 0.8125rem; font-weight: 500;
     background: var(--color-surface-alt); color: var(--color-text); border: 1px solid var(--color-border);
   }
-  .badge-running { background: var(--color-success-soft); color: var(--color-success); border-color: var(--color-success); }
-  .badge-billable { background: var(--color-accent-soft); color: var(--color-accent); border-color: var(--color-accent); }
-  .badge-archived { background: var(--color-surface-alt); color: var(--color-text-muted); }
-  .badge-warning { background: var(--color-warning-soft); color: var(--color-warning); border-color: var(--color-warning); }
+
+  /* Status chip — rectangular status/metadata indicator. Pills are
+     reserved for actions; chips are rectangles. Every kind pairs
+     color with a glyph or shape cue so status is never color-only.
+     See openspec/specs/ui-component-identity/spec.md. */
+  .tt-chip {
+    display: inline-flex; align-items: center; gap: var(--space-1);
+    height: 20px; padding: 0 var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem; font-weight: 500; line-height: 1;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface); color: var(--color-text);
+  }
+  .tt-chip-glyph { font-size: 0.75em; line-height: 1; }
+  .tt-chip-label { line-height: 1; }
+
+  /* Variants — neutral outline vs soft filled. */
+  .tt-chip-outlined { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text-muted); }
+  .tt-chip-filled   { background: var(--color-surface-alt); border-color: var(--color-border); color: var(--color-text); }
+
+  /* Kinds — fill + border tuned per semantic; glyph carries non-color cue. */
+  .tt-chip-billable     { background: var(--color-accent-soft);  color: var(--color-accent);  border-color: var(--color-accent); }
+  .tt-chip-running      { background: var(--color-accent-soft);  color: var(--color-accent);  border-color: var(--color-accent); }
+  .tt-chip-non-billable { background: var(--color-surface);      color: var(--color-text-muted); border-color: var(--color-border); }
+  .tt-chip-archived     { background: var(--color-surface-alt);  color: var(--color-text-muted); border-color: var(--color-border); }
+  .tt-chip-draft        { background: var(--color-surface);      color: var(--color-text-muted); border-color: var(--color-border); }
+  .tt-chip-warning      { background: var(--color-warning-soft); color: var(--color-warning); border-color: var(--color-warning); }
 
   /* Flash messages — role + text in templates carry the semantic signal. */
   .flash { padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); margin-bottom: var(--space-4); border: 1px solid var(--color-border); }
   .flash-success { background: var(--color-success-soft); border-color: var(--color-success); color: var(--color-success); }
   .flash-error { background: var(--color-danger-soft); border-color: var(--color-danger); color: var(--color-danger); }
 
-  /* Timer widget */
+  /* Timer control — signature pill of the app. Idle renders as a start
+     form; running renders as a single pill container with accent fill,
+     2px accent border, pulsing dot, and tabular-nums elapsed time. */
+  .tt-timer {
+    display: flex; align-items: center; gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+  }
+  .tt-timer-running {
+    background: var(--color-accent-soft);
+    border: 2px solid var(--color-accent);
+    /* Compensate for 1px → 2px border so layout height is stable. */
+    padding: calc(var(--space-3) - 1px) calc(var(--space-4) - 1px);
+  }
+  .tt-timer-dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--color-accent);
+    flex-shrink: 0;
+    animation: tt-timer-pulse 1.6s var(--motion-easing-standard) infinite;
+  }
+  @keyframes tt-timer-pulse {
+    0%, 100% { opacity: 1;   transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.85); }
+  }
+  .tt-timer-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .tt-timer-meta { font-size: 0.875rem; display: flex; align-items: baseline; gap: var(--space-1); flex-wrap: wrap; }
+  .tt-timer-elapsed {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.75rem; font-weight: 700; line-height: 1.1;
+    color: var(--color-accent);
+  }
+  .tt-timer-started { font-size: 0.8125rem; }
+  .tt-timer-stop { margin-left: auto; }
+
+  /* Grandfathered .timer + .elapsed kept only for any non-partial usage
+     (none known as of this change). Safe to remove in a follow-up. */
   .timer {
     display: flex; align-items: center; gap: var(--space-4);
     padding: var(--space-4) var(--space-5); border: 1px solid var(--color-border);
