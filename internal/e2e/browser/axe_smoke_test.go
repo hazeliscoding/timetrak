@@ -39,12 +39,12 @@ func TestAxeSmokePerPage(t *testing.T) {
 		{"login", "/login"},
 		{"signup", "/signup"},
 		{"dashboard", "/dashboard"},
-		{"entries", "/entries"},
+		{"entries", "/time"},
 		{"clients", "/clients"},
 		{"projects", "/projects"},
 		{"rates", "/rates"},
 		{"reports", "/reports"},
-		{"settings", "/settings"},
+		{"settings", "/workspace/settings"},
 	}
 
 	for _, p := range pages {

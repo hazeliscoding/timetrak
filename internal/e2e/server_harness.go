@@ -10,6 +10,7 @@
 package e2e
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -21,6 +22,7 @@ import (
 	"timetrak/internal/projects"
 	"timetrak/internal/rates"
 	"timetrak/internal/reporting"
+	"timetrak/internal/settings"
 	"timetrak/internal/shared/authz"
 	"timetrak/internal/shared/clock"
 	"timetrak/internal/shared/csrf"
@@ -71,13 +73,32 @@ func BuildServer(t *testing.T) *httptest.Server {
 	trackingSvc := tracking.NewService(pool, clock.System{}, ratesSvc)
 
 	lay := layout.New(pool, wsSvc)
+
+	// Timezones: snapshot once for the settings handler, mirroring the
+	// production bootstrap in cmd/web/main.go. The Postgres list is
+	// effectively static per version.
+	tzList, err := wsSvc.ListTimezones(context.Background())
+	if err != nil {
+		t.Fatalf("list timezones: %v", err)
+	}
+
 	mux := http.NewServeMux()
+
+	// Static assets — served from the repo's web/static/ so browser
+	// contract tests render pages with the real compiled CSS and JS.
+	// Mirrors cmd/web/main.go:161-162. See
+	// openspec/specs/ui-browser-tests/spec.md (Harness MUST reuse the
+	// existing server bootstrap).
+	staticDir := filepath.Join(FindRepoRoot(t), "web", "static")
+	staticFS := http.FileServer(http.Dir(filepath.Clean(staticDir)))
+	mux.Handle("GET /static/", http.StripPrefix("/static/", staticFS))
 
 	auth.NewHandler(authSvc, store, tpls, limiter).Register(mux)
 	workspace.NewHandler(wsSvc).Register(mux)
 	protect := func(next http.Handler) http.Handler {
 		return authz.RequireAuth(azSvc.RequireWorkspaceMember(next))
 	}
+	settings.NewHandler(wsSvc, tpls, lay, tzList).Register(mux, protect)
 	clients.NewHandler(clientsSvc, tpls, lay).Register(mux, protect)
 	projects.NewHandler(projectsSvc, clientsSvc, tpls, lay).Register(mux, protect)
 	rates.NewHandler(ratesSvc, clientsSvc, projectsSvc, tpls, lay).Register(mux, protect)
