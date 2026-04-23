@@ -81,5 +81,5 @@
 ## 11. Commit and archive
 
 - [x] 11.1 Mark every task in this file complete.
-- [ ] 11.2 Stage and commit the change using the `tt-conventional-commit` skill. Critical — no `Co-Authored-By: Claude` trailer, no Claude Code attribution in the message.
-- [ ] 11.3 Archive the change via `/opsx:archive refine-timetrak-brand-and-product-visual-language`.
+- [x] 11.2 Committed retroactively as `c7f7421 feat(ui): refine brand and product visual language`. No Claude attribution.
+- [x] 11.3 Archive in progress via `/opsx:archive refine-timetrak-brand-and-product-visual-language --yes` (2026-04-23).
