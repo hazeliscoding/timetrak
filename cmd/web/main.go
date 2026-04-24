@@ -142,7 +142,7 @@ func main() {
 	clientsHandler := clients.NewHandler(clientsSvc, tpls, layoutBuilder)
 	projectsHandler := projects.NewHandler(projectsSvc, clientsSvc, tpls, layoutBuilder)
 	ratesHandler := rates.NewHandler(ratesSvc, clientsSvc, projectsSvc, tpls, layoutBuilder)
-	trackingHandler := tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, tpls, layoutBuilder)
+	trackingHandler := tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, wsSvc, tpls, layoutBuilder)
 	trackingHandler.SetLogger(logger)
 	reportsHandler := reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, wsSvc, tpls, layoutBuilder)
 

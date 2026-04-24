@@ -187,6 +187,19 @@ func baseFuncs() template.FuncMap {
 	return template.FuncMap{
 		"formatDate": func(t time.Time) string { return t.Format("2006-01-02") },
 		"formatTime": func(t time.Time) string { return t.Format("15:04") },
+		// formatLocalDate / formatLocalTime convert a UTC time.Time to
+		// the named IANA timezone before formatting, so entry-edit
+		// forms can prefill split date+time inputs in the workspace's
+		// reporting timezone. Empty or unknown tz falls back to UTC so
+		// the function never panics in templates. See
+		// openspec/specs/tracking/spec.md (Datetime input parse and
+		// display is workspace-timezone-aware).
+		"formatLocalDate": func(t time.Time, tz string) string {
+			return toLocation(t, tz).Format("2006-01-02")
+		},
+		"formatLocalTime": func(t time.Time, tz string) string {
+			return toLocation(t, tz).Format("15:04")
+		},
 		"formatDuration": func(seconds int64) string {
 			if seconds < 0 {
 				seconds = 0
@@ -240,4 +253,19 @@ func baseFuncs() template.FuncMap {
 			return template.CSS("var(" + name + ")")
 		},
 	}
+}
+
+// toLocation converts a time.Time into the named IANA timezone for
+// display. Empty or unknown tz falls back to UTC so a broken workspace
+// config cannot panic a render. Consumed by formatLocalDate /
+// formatLocalTime.
+func toLocation(t time.Time, tz string) time.Time {
+	if tz == "" {
+		return t.UTC()
+	}
+	loc, err := time.LoadLocation(tz)
+	if err != nil {
+		return t.UTC()
+	}
+	return t.In(loc)
 }

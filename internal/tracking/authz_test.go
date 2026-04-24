@@ -57,7 +57,7 @@ func TestTrackingCrossWorkspaceDenialMatrix(t *testing.T) {
 	authzSvc := authz.NewService(pool.Pool)
 	wsSvc := workspace.NewService(pool, authzSvc, nil)
 	lay := layout.New(pool, wsSvc)
-	h := tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportSvc, tpls, lay)
+	h := tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportSvc, wsSvc, tpls, lay)
 
 	mux := http.NewServeMux()
 	h.Register(mux, func(next http.Handler) http.Handler { return next })
@@ -73,8 +73,10 @@ func TestTrackingCrossWorkspaceDenialMatrix(t *testing.T) {
 		{"entry-update", http.MethodPatch, "/time-entries/" + entryB.String(),
 			url.Values{
 				"project_id":  {f.ProjectA.String()},
-				"started_at":  {time.Now().UTC().Add(-2 * time.Hour).Format(time.RFC3339)},
-				"ended_at":    {time.Now().UTC().Add(-time.Hour).Format(time.RFC3339)},
+				"start_date":  {time.Now().UTC().Add(-2 * time.Hour).Format("2006-01-02")},
+				"start_time":  {time.Now().UTC().Add(-2 * time.Hour).Format("15:04")},
+				"end_date":    {time.Now().UTC().Add(-time.Hour).Format("2006-01-02")},
+				"end_time":    {time.Now().UTC().Add(-time.Hour).Format("15:04")},
 				"description": {""},
 				"is_billable": {"on"},
 			},

@@ -19,6 +19,7 @@ import (
 	"timetrak/internal/projects"
 	"timetrak/internal/rates"
 	"timetrak/internal/reporting"
+	"timetrak/internal/shared/authz"
 	"timetrak/internal/shared/clock"
 	"timetrak/internal/shared/db"
 	"timetrak/internal/shared/testdb"
@@ -274,9 +275,13 @@ func buildTrackingTestHandler(t *testing.T, pool *db.Pool) (http.Handler, *track
 	ratesSvc := rates.NewService(pool)
 	reportSvc := reporting.NewService(pool)
 	trackingSvc := tracking.NewService(pool, clock.System{}, ratesSvc)
-	wsSvc := workspace.NewService(pool, nil, nil)
+	// wsSvc now receives a real authz service because tracking handlers
+	// look up ReportingTimezone via wsSvc.Get, which invokes authz.IsMember.
+	// See humanize-datetime-inputs change.
+	authzSvc := authz.NewService(pool.Pool)
+	wsSvc := workspace.NewService(pool, authzSvc, nil)
 	lay := layout.New(pool, wsSvc)
-	th := tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportSvc, tpls, lay)
+	th := tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportSvc, wsSvc, tpls, lay)
 
 	mux := http.NewServeMux()
 	th.Register(mux, func(next http.Handler) http.Handler { return next })

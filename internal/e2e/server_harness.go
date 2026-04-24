@@ -102,7 +102,7 @@ func BuildServer(t *testing.T) *httptest.Server {
 	clients.NewHandler(clientsSvc, tpls, lay).Register(mux, protect)
 	projects.NewHandler(projectsSvc, clientsSvc, tpls, lay).Register(mux, protect)
 	rates.NewHandler(ratesSvc, clientsSvc, projectsSvc, tpls, lay).Register(mux, protect)
-	tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, tpls, lay).Register(mux, protect)
+	tracking.NewHandler(trackingSvc, projectsSvc, clientsSvc, reportingSvc, wsSvc, tpls, lay).Register(mux, protect)
 	reporting.NewHandler(reportingSvc, clientsSvc, projectsSvc, wsSvc, tpls, lay).Register(mux, protect)
 
 	// Showcase is mounted in the test server so browser contract tests

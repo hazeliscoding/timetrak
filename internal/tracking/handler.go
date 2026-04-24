@@ -31,9 +31,11 @@ import (
 	"timetrak/internal/reporting"
 	"timetrak/internal/shared/authz"
 	"timetrak/internal/shared/csrf"
+	"timetrak/internal/shared/datetime"
 	sharedhttp "timetrak/internal/shared/http"
 	"timetrak/internal/shared/templates"
 	"timetrak/internal/web/layout"
+	"timetrak/internal/workspace"
 )
 
 // Handler wires tracking routes and the dashboard.
@@ -42,14 +44,39 @@ type Handler struct {
 	projectsSvc *projects.Service
 	clientsSvc  *clients.Service
 	reportSvc   *reporting.Service
+	wsSvc       *workspace.Service
 	tpls        *templates.Registry
 	lay         *layout.Builder
 	logger      *slog.Logger
 }
 
-// NewHandler constructs the handler.
-func NewHandler(svc *Service, ps *projects.Service, cs *clients.Service, reportSvc *reporting.Service, tpls *templates.Registry, lay *layout.Builder) *Handler {
-	return &Handler{svc: svc, projectsSvc: ps, clientsSvc: cs, reportSvc: reportSvc, tpls: tpls, lay: lay, logger: slog.Default()}
+// NewHandler constructs the handler. The workspace service is used to
+// look up the active workspace's ReportingTimezone at request time so
+// datetime input parse / display is workspace-timezone-aware. See
+// openspec/specs/tracking/spec.md (Datetime input parse and display is
+// workspace-timezone-aware).
+func NewHandler(svc *Service, ps *projects.Service, cs *clients.Service, reportSvc *reporting.Service, ws *workspace.Service, tpls *templates.Registry, lay *layout.Builder) *Handler {
+	return &Handler{svc: svc, projectsSvc: ps, clientsSvc: cs, reportSvc: reportSvc, wsSvc: ws, tpls: tpls, lay: lay, logger: slog.Default()}
+}
+
+// resolveTimezone looks up the active workspace's ReportingTimezone.
+// On any failure — missing wsSvc (defensive), nil workspace, or lookup
+// error — it returns "UTC" so the user's write never 500s on tz. The
+// failure is logged at warn with a structured field so operators can
+// trace latent workspace data issues.
+func (h *Handler) resolveTimezone(r *http.Request, wc authz.WorkspaceContext) string {
+	if h.wsSvc == nil {
+		return "UTC"
+	}
+	ws, err := h.wsSvc.Get(r.Context(), wc.UserID, wc.WorkspaceID)
+	if err != nil || ws.ReportingTimezone == "" {
+		h.logger.WarnContext(r.Context(), "tz_lookup_failed",
+			"workspace_id", wc.WorkspaceID.String(),
+			"user_id", wc.UserID.String(),
+			"err", err)
+		return "UTC"
+	}
+	return ws.ReportingTimezone
 }
 
 // SetLogger overrides the structured logger. Used by tests to capture output.
@@ -266,6 +293,10 @@ type entriesView struct {
 	ActiveProjects []projects.Project
 	Filters        filterForm
 	ManualForm     manualFormView
+	// Timezone is the active workspace's ReportingTimezone, passed to
+	// the manual-entry form so any tz hint can render consistently
+	// with the edit form.
+	Timezone string
 }
 
 type filterForm struct {
@@ -372,6 +403,7 @@ func (h *Handler) renderEntries(w http.ResponseWriter, r *http.Request, form man
 		ActiveProjects: aps,
 		Filters:        filt,
 		ManualForm:     form,
+		Timezone:       h.resolveTimezone(r, wc),
 	})
 }
 
@@ -385,7 +417,7 @@ func (h *Handler) createManual(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 		Billable:    r.FormValue("is_billable") == "on",
 	}
-	in, err := parseManualForm(form)
+	in, err := parseManualForm(form, h.resolveTimezone(r, wc))
 	if err != nil {
 		form.Error = err.Error()
 		h.renderEntries(w, r, form)
@@ -422,6 +454,10 @@ type entryRowView struct {
 	Error     string
 	ErrorCode string // stable taxonomy code for the shared tracking_error partial
 	Projects  []projects.Project
+	// Timezone is the active workspace's ReportingTimezone, consumed by
+	// the edit form to prefill the split date+time inputs and (optionally)
+	// render a muted hint. Empty string = UTC fallback.
+	Timezone string
 }
 
 func (h *Handler) entryRow(w http.ResponseWriter, r *http.Request) {
@@ -453,7 +489,28 @@ func (h *Handler) editEntry(w http.ResponseWriter, r *http.Request) {
 	}
 	ps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
 	_ = h.tpls.RenderPartial(w, http.StatusOK, "time.index", "entry_row", entryRowView{
-		CSRFToken: csrf.Token(r), Entry: e, Edit: true, Projects: ps,
+		CSRFToken: csrf.Token(r), Entry: e, Edit: true, Projects: ps, Timezone: h.resolveTimezone(r, wc),
+	})
+}
+
+// renderEditError re-renders the entry edit form after a parse failure
+// with the user's in-flight values preserved and the per-field error
+// surfaced via the existing tracking_error partial path. Used by
+// updateEntry when datetime.ParseLocalDateTime returns a FieldError.
+func (h *Handler) renderEditError(w http.ResponseWriter, r *http.Request, wc authz.WorkspaceContext, id, projectID uuid.UUID, parseErr error, tz string) {
+	existing, _ := h.svc.Get(r.Context(), wc.WorkspaceID, id)
+	if existing.ID == uuid.Nil {
+		existing = Entry{ID: id, WorkspaceID: wc.WorkspaceID, ProjectID: projectID}
+	}
+	ps, _ := h.projectsSvc.ListActive(r.Context(), wc.WorkspaceID)
+	_ = h.tpls.RenderPartial(w, http.StatusUnprocessableEntity, "time.index", "entry_row", entryRowView{
+		CSRFToken: csrf.Token(r),
+		Entry:     existing,
+		Edit:      true,
+		Error:     parseErr.Error(),
+		ErrorCode: "tracking.invalid_interval",
+		Projects:  ps,
+		Timezone:  tz,
 	})
 }
 
@@ -469,21 +526,22 @@ func (h *Handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid project", http.StatusUnprocessableEntity)
 		return
 	}
-	startedAt, err := time.Parse(time.RFC3339, r.FormValue("started_at"))
+	tz := h.resolveTimezone(r, wc)
+	startedAt, err := datetime.ParseLocalDateTime(r.FormValue("start_date"), r.FormValue("start_time"), tz)
 	if err != nil {
-		http.Error(w, "invalid started_at", http.StatusUnprocessableEntity)
+		h.renderEditError(w, r, wc, id, projectID, err, tz)
 		return
 	}
-	endedAt, err := time.Parse(time.RFC3339, r.FormValue("ended_at"))
+	endedAt, err := datetime.ParseLocalDateTime(r.FormValue("end_date"), r.FormValue("end_time"), tz)
 	if err != nil {
-		http.Error(w, "invalid ended_at", http.StatusUnprocessableEntity)
+		h.renderEditError(w, r, wc, id, projectID, err, tz)
 		return
 	}
 	in := ManualInput{
 		ProjectID:   projectID,
 		Description: r.FormValue("description"),
-		StartedAt:   startedAt.UTC(),
-		EndedAt:     endedAt.UTC(),
+		StartedAt:   startedAt,
+		EndedAt:     endedAt,
 		IsBillable:  r.FormValue("is_billable") == "on",
 	}
 	e, err := h.svc.Edit(r.Context(), wc.WorkspaceID, wc.UserID, id, in)
@@ -503,7 +561,7 @@ func (h *Handler) updateEntry(w http.ResponseWriter, r *http.Request) {
 		if code, status, msg := taxonomyResponse(err); code != "" {
 			h.logTaxonomy(r, code, "entry_id", id.String(), "project_id", in.ProjectID.String())
 			_ = h.tpls.RenderPartial(w, status, "time.index", "entry_row", entryRowView{
-				CSRFToken: csrf.Token(r), Entry: existing, Edit: true, Error: msg, ErrorCode: code, Projects: ps,
+				CSRFToken: csrf.Token(r), Entry: existing, Edit: true, Error: msg, ErrorCode: code, Projects: ps, Timezone: h.resolveTimezone(r, wc),
 			})
 			return
 		}
@@ -534,23 +592,23 @@ func (h *Handler) deleteEntry(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func parseManualForm(f manualFormView) (ManualInput, error) {
+func parseManualForm(f manualFormView, tz string) (ManualInput, error) {
 	in := ManualInput{IsBillable: f.Billable, Description: f.Description}
 	pid, err := uuid.Parse(f.ProjectID)
 	if err != nil {
 		return in, errors.New("pick a project")
 	}
 	in.ProjectID = pid
-	start, err := time.Parse("2006-01-02T15:04", f.Date+"T"+f.StartTime)
+	start, err := datetime.ParseLocalDateTime(f.Date, f.StartTime, tz)
 	if err != nil {
 		return in, errors.New("pick a valid start date and time")
 	}
-	end, err := time.Parse("2006-01-02T15:04", f.Date+"T"+f.EndTime)
+	end, err := datetime.ParseLocalDateTime(f.Date, f.EndTime, tz)
 	if err != nil {
 		return in, errors.New("pick a valid end date and time")
 	}
-	in.StartedAt = start.UTC()
-	in.EndedAt = end.UTC()
+	in.StartedAt = start
+	in.EndedAt = end
 	return in, nil
 }
 

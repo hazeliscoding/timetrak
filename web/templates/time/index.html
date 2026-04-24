@@ -78,6 +78,9 @@
         </label>
         <button class="btn btn-primary" type="submit">Add entry</button>
       </div>
+      {{if and .Timezone (ne .Timezone "UTC")}}
+        <p class="muted" style="font-size:.8125rem;margin:var(--space-2) 0 0">Times interpreted in <code>{{.Timezone}}</code>.</p>
+      {{end}}
     </form>
   {{end}}
 

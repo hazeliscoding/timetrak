@@ -17,12 +17,20 @@
           <input id="edit-desc-{{.Entry.ID}}" name="description" type="text" value="{{.Entry.Description}}">
         </div>
         <div class="field" style="margin-bottom:0">
-          <label for="edit-start-{{.Entry.ID}}" class="sr-only">Started at (UTC ISO8601)</label>
-          <input id="edit-start-{{.Entry.ID}}" name="started_at" type="text" required aria-required="true" value="{{iso .Entry.StartedAt}}" style="width:15rem">
+          <label for="edit-start-date-{{.Entry.ID}}" class="sr-only">Start date</label>
+          <input id="edit-start-date-{{.Entry.ID}}" name="start_date" type="date" required aria-required="true" value="{{formatLocalDate .Entry.StartedAt $.Timezone}}"{{if eq .ErrorCode "tracking.invalid_interval"}} data-focus-after-swap aria-invalid="true"{{end}}>
         </div>
         <div class="field" style="margin-bottom:0">
-          <label for="edit-end-{{.Entry.ID}}" class="sr-only">Ended at (UTC ISO8601)</label>
-          <input id="edit-end-{{.Entry.ID}}" name="ended_at" type="text" required aria-required="true" value="{{if .Entry.EndedAt}}{{iso .Entry.EndedAt}}{{end}}" style="width:15rem"{{if eq .ErrorCode "tracking.invalid_interval"}} data-focus-after-swap aria-invalid="true"{{end}}>
+          <label for="edit-start-time-{{.Entry.ID}}" class="sr-only">Start time</label>
+          <input id="edit-start-time-{{.Entry.ID}}" name="start_time" type="time" required aria-required="true" value="{{formatLocalTime .Entry.StartedAt $.Timezone}}">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="edit-end-date-{{.Entry.ID}}" class="sr-only">End date</label>
+          <input id="edit-end-date-{{.Entry.ID}}" name="end_date" type="date" required aria-required="true" value="{{if .Entry.EndedAt}}{{formatLocalDate .Entry.EndedAt $.Timezone}}{{end}}">
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label for="edit-end-time-{{.Entry.ID}}" class="sr-only">End time</label>
+          <input id="edit-end-time-{{.Entry.ID}}" name="end_time" type="time" required aria-required="true" value="{{if .Entry.EndedAt}}{{formatLocalTime .Entry.EndedAt $.Timezone}}{{end}}">
         </div>
         <label class="row" style="gap:.25rem;margin:0">
           <input type="checkbox" name="is_billable" {{if .Entry.IsBillable}}checked{{end}}>

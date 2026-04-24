@@ -444,11 +444,12 @@ var ComponentEntries = []ComponentEntry{
 		Purpose:     "Row renderer for the time-entries table. Root is <tr id=\"entry-row-<uuid>\">. Emits entries-changed on mutations; consumes tracking_error on integrity failures.",
 		DictKeys: []DictKeyDoc{
 			{Name: "Entry", Required: true, Note: "Entry view with ID, ClientName, ProjectID, ProjectName, Description, StartedAt, EndedAt, DurationSeconds, IsBillable."},
-			{Name: "Edit", Required: true, Note: "When true, renders the inline edit form."},
+			{Name: "Edit", Required: true, Note: "When true, renders the inline edit form with split start_date / start_time / end_date / end_time inputs."},
 			{Name: "Projects", Required: false, Default: "nil", Note: "Projects list shown in the edit select."},
 			{Name: "CSRFToken", Required: true, Note: "CSRF token."},
 			{Name: "Error", Required: false, Default: "", Note: "Fallback error message (used when ErrorCode is empty)."},
 			{Name: "ErrorCode", Required: false, Default: "", Note: "Tracking error taxonomy code for tracking_error partial."},
+			{Name: "Timezone", Required: false, Default: "UTC", Note: "Active workspace ReportingTimezone. Edit mode prefills the split date+time inputs in this zone; empty falls back to UTC."},
 		},
 		Examples: []ComponentExample{
 			{ID: "read", Label: "Read mode, billable closed", PartialName: "entry_row", SnippetID: "entry_row.read", Dict: map[string]any{
@@ -457,10 +458,19 @@ var ComponentEntries = []ComponentEntry{
 			{ID: "running", Label: "Running (no EndedAt)", PartialName: "entry_row", SnippetID: "entry_row.running", Dict: map[string]any{
 				"Entry": demoEntry(true, false), "Edit": false, "CSRFToken": fakeCSRFToken,
 			}},
+			{ID: "edit-utc", Label: "Edit mode (UTC workspace)", PartialName: "entry_row", SnippetID: "entry_row.edit_utc", Dict: map[string]any{
+				"Entry": demoEntry(true, true), "Edit": true, "CSRFToken": fakeCSRFToken, "Timezone": "UTC",
+				"Projects": []map[string]any{{"ID": demoProjectID.String(), "ClientName": "Acme Co", "Name": "Website redesign"}},
+			}},
+			{ID: "edit-ny", Label: "Edit mode (America/New_York — local clock)", PartialName: "entry_row", SnippetID: "entry_row.edit_ny", Dict: map[string]any{
+				"Entry": demoEntry(true, true), "Edit": true, "CSRFToken": fakeCSRFToken, "Timezone": "America/New_York",
+				"Projects": []map[string]any{{"ID": demoProjectID.String(), "ClientName": "Acme Co", "Name": "Website redesign"}},
+			}},
 		},
 		A11yNotes: []string{
 			"Running / billable states use badges with visible text.",
 			"Edit form uses data-focus-after-swap on the first invalid or the first control otherwise.",
+			"Edit mode renders four native date/time inputs (start_date, start_time, end_date, end_time) prefilled in the workspace's ReportingTimezone — no raw ISO strings.",
 		},
 	},
 	{

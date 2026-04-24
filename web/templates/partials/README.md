@@ -358,6 +358,15 @@ Row renderers. Root element is `<tr id="<domain>-row-<uuid>">` for OOB swap.
 See individual files for the context shapes (`.Client`/`.Project`/`.Entry`/
 `.Rule` plus `CSRFToken`, `Edit`, optional `Error`, etc.).
 
+**`entry_row` edit mode** — the edit variant consumes an additional
+`Timezone` key carrying the workspace's `ReportingTimezone`. The form
+submits four datetime fields — `start_date`, `start_time`, `end_date`,
+`end_time` — each a native `type="date"` or `type="time"` input. Values
+are prefilled via `formatLocalDate` / `formatLocalTime` so they render
+in the workspace's local clock, not UTC. See
+`openspec/specs/tracking/spec.md` (Datetime input parse and display is
+workspace-timezone-aware).
+
 ### `rate_form`, `rates_table`
 
 Rates domain composites. `rate_form` supports `hx-swap-oob="true"` via `.OOB`.
