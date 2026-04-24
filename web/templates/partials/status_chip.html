@@ -22,7 +22,10 @@
 {{- if and (not $glyph) (eq $kind "running") -}}{{- $glyph = "●" -}}{{- end -}}
 {{- if and (not $glyph) (eq $kind "archived") -}}{{- $glyph = "⊘" -}}{{- end -}}
 {{- if and (not $glyph) (eq $kind "draft") -}}{{- $glyph = "○" -}}{{- end -}}
-{{- if and (not $glyph) (eq $kind "warning") -}}{{- $glyph = "⚠" -}}{{- end -}}
+{{/* U+26A0 U+FE0E (variation selector 15) forces text-style rendering on platforms
+     that would otherwise substitute an emoji warning sign (which visually reads as ★
+     against dark backgrounds). */}}
+{{- if and (not $glyph) (eq $kind "warning") -}}{{- $glyph = "⚠︎" -}}{{- end -}}
 <span class="tt-chip tt-chip-{{$variant}} tt-chip-{{$kind}}"{{if eq $kind "running"}} aria-label="Running"{{else if eq $kind "archived"}} aria-label="Archived"{{end}}>
 {{- if $glyph}}<span class="tt-chip-glyph" aria-hidden="true">{{$glyph}}</span>{{end -}}
 <span class="tt-chip-label">{{$label}}</span>
