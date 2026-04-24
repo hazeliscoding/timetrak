@@ -179,7 +179,7 @@ func (h *Handler) dashboardStates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	base, _ := h.lay.Base(r, "dev-showcase")
-	_ = h.tpls.Render(w, http.StatusOK, "showcase.dashboard-states", indexView{BaseView: base})
+	_ = h.tpls.Render(w, http.StatusOK, "showcase.dashboard_states", indexView{BaseView: base})
 }
 
 func (h *Handler) emptyStates(w http.ResponseWriter, r *http.Request) {
@@ -187,7 +187,7 @@ func (h *Handler) emptyStates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	base, _ := h.lay.Base(r, "dev-showcase")
-	_ = h.tpls.Render(w, http.StatusOK, "showcase.empty-states", indexView{BaseView: base})
+	_ = h.tpls.Render(w, http.StatusOK, "showcase.empty_states", indexView{BaseView: base})
 }
 
 // splitTokenFamilies groups tokens into the three sections the tokens
