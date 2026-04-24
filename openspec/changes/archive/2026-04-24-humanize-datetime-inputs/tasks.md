@@ -34,5 +34,5 @@
 
 ## 6. Commit and archive
 
-- [ ] 6.1 Commit via `tt-conventional-commit` — one commit covering helper + handler + template + tests. No Claude attribution.
-- [ ] 6.2 Archive via `/opsx:archive humanize-datetime-inputs`.
+- [x] 6.1 Committed via `tt-conventional-commit` as `feat(tracking): humanize datetime inputs with timezone-aware parse`. No Claude attribution.
+- [x] 6.2 Archived 2026-04-24 via `/opsx:archive humanize-datetime-inputs --yes`. Spec sync: +1 ADDED in `tracking` (Datetime input parse and display is workspace-timezone-aware).
