@@ -4,6 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {{/*
+    FOUC-prevention head-script. Reads the stored theme synchronously
+    before any stylesheet is applied, so first paint matches the user's
+    preference. This is the ONLY sanctioned inline <script> in the
+    product; see openspec/specs/ui-foundation/spec.md
+    (FOUC-prevention head script is the single sanctioned inline script).
+  */}}
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("timetrak.theme") || "system";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { /* localStorage denied — fall through with default */ }
+    })();
+  </script>
+  {{/*
     Title composition: pages SHOULD override this block as
     "<Page name> · TimeTrak" using U+00B7 MIDDLE DOT with a single space
     either side (e.g. `{{define "title"}}Clients · TimeTrak{{end}}`).

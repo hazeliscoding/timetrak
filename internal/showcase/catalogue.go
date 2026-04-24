@@ -249,6 +249,33 @@ var ComponentEntries = []ComponentEntry{
 		},
 	},
 	{
+		ID:          "theme-switch",
+		Name:        "theme_switch",
+		PartialName: "theme_switch",
+		SourcePath:  "web/templates/partials/theme_switch.html",
+		SpecRef:     "openspec/specs/ui-partials/spec.md",
+		Purpose:     "Segmented three-way control for light/dark/system theme. Single pill-shaped radiogroup; selected segment uses accent-soft fill + 2px accent inset edge to answer \"which theme is active?\". State persists to localStorage via the existing data-theme-set click hook in web/static/js/app.js; the FOUC-prevention head-script in base.html applies it synchronously on first paint.",
+		DictKeys: []DictKeyDoc{
+			{Name: "InitialSelected", Required: false, Default: "\"\"", Note: "One of light|dark|system. Empty = production case (JS synchronizes active state). Set = showcase case (pre-selects the matching segment)."},
+		},
+		Examples: []ComponentExample{
+			{ID: "light-selected", Label: "Light selected", PartialName: "theme_switch", SnippetID: "theme_switch.light_selected", Dict: map[string]any{
+				"InitialSelected": "light",
+			}},
+			{ID: "dark-selected", Label: "Dark selected", PartialName: "theme_switch", SnippetID: "theme_switch.dark_selected", Dict: map[string]any{
+				"InitialSelected": "dark",
+			}},
+			{ID: "system-selected", Label: "System selected", PartialName: "theme_switch", SnippetID: "theme_switch.system_selected", Dict: map[string]any{
+				"InitialSelected": "system",
+			}},
+		},
+		A11yNotes: []string{
+			"Wrapper is role=\"radiogroup\" with aria-label=\"Theme\"; segments are <button role=\"radio\"> with both aria-pressed (legacy JS hook) and aria-checked (correct radiogroup semantics).",
+			"Glyphs are aria-hidden supplementary; the accessible name comes from the per-segment aria-label plus the visible label (or sr-only label under 720px).",
+			"The selected segment consumes var(--color-accent-soft) + var(--color-accent) via an allow-listed entry in openspec/specs/ui-component-identity/spec.md (Accent rationing).",
+		},
+	},
+	{
 		ID:          "empty-state",
 		Name:        "empty_state",
 		PartialName: "empty_state",

@@ -231,6 +231,34 @@ carries non-color conveyance as required by WCAG 2.2 (status never color-only).
 
 ---
 
+### `theme_switch`
+
+Segmented three-way control for the app's theme setting (light / dark /
+system). Renders as a single `role="radiogroup"` wrapper containing
+three `<button role="radio">` segments. Pairs with the existing
+`data-theme-set` click contract in `web/static/js/app.js` and the
+FOUC-prevention head-script in `base.html`.
+
+**Context keys:**
+
+| Key               | Required | Default | Notes                                                                          |
+| ----------------- | -------- | ------- | ------------------------------------------------------------------------------ |
+| `InitialSelected` | no       | `""`    | One of `light` \| `dark` \| `system`. When empty the production JS synchronizes the pressed state after the head-script sets `data-theme`. When set (showcase case), the matching segment renders pre-pressed. |
+
+**Accessibility:** `role="radiogroup"` on the wrapper + `aria-label="Theme"`.
+Each segment carries both `aria-pressed` (consumed by the legacy JS hook)
+and `aria-checked` (correct radiogroup semantics). Glyphs are `aria-hidden`;
+the accessible name comes from the per-segment `aria-label` and the visible
+`<span class="tt-theme-switch-label">`. See
+`openspec/specs/ui-partials/spec.md` (Theme switch partial) and
+`openspec/specs/ui-component-identity/spec.md` (Accent rationing —
+`.tt-theme-switch [aria-pressed="true"]` is an allow-listed consumer).
+
+**Event contract:** neither emits nor listens (theme state is purely
+client-side via localStorage).
+
+---
+
 ### `empty_state`
 
 Copy-first empty block. Used when a list, table, or filtered result has no

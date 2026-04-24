@@ -202,6 +202,32 @@
   .tt-chip-draft        { background: var(--color-surface);      color: var(--color-text-muted); border-color: var(--color-border); }
   .tt-chip-warning      { background: var(--color-warning-soft); color: var(--color-warning); border-color: var(--color-warning); }
 
+  /* Theme switch — three .btn-ghost buttons forming a radiogroup.
+     Visual weight matches the rest of the header (sign-out, workspace
+     switcher) by inheriting .btn-ghost styling. The selected segment
+     answers "which theme is active?" via accent-soft fill + accent
+     text; that's the single allow-listed accent surface for this
+     component. See openspec/specs/ui-component-identity/spec.md. */
+  .tt-theme-switch { display: inline-flex; gap: var(--space-1); align-items: center; }
+  .tt-theme-seg-glyph { font-size: 0.9em; line-height: 1; }
+  .tt-theme-seg-label { line-height: 1; }
+  .tt-theme-seg[aria-pressed="true"] {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    font-weight: 600;
+  }
+  .tt-theme-seg[aria-pressed="true"]:hover {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+  }
+  @media (max-width: 720px) {
+    .tt-theme-seg-label {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+  }
+
   /* Flash messages — role + text in templates carry the semantic signal. */
   .flash { padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); margin-bottom: var(--space-4); border: 1px solid var(--color-border); }
   .flash-success { background: var(--color-success-soft); border-color: var(--color-success); color: var(--color-success); }

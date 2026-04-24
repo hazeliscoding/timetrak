@@ -1,0 +1,50 @@
+{{define "theme_switch"}}
+{{- /*
+  theme_switch — three .btn-ghost buttons forming a radiogroup for the
+  light / dark / system theme setting. Visual weight matches the rest
+  of the header (.btn-ghost everywhere else). Selected segment gets
+  accent-soft fill via [aria-pressed="true"] — the single allow-listed
+  accent consumer for this component.
+
+  Pairs with the data-theme-set click hook in web/static/js/app.js and
+  the FOUC-prevention head-script in base.html.
+
+  dict context (optional):
+    InitialSelected  string  one of "light" | "dark" | "system" | "".
+                             When empty (production case), all segments
+                             render with aria-pressed="false" and the
+                             client JS synchronizes. When set (showcase),
+                             the matching segment pre-renders as pressed.
+
+  See openspec/specs/ui-partials/spec.md (Theme switch partial) and
+  openspec/specs/ui-component-identity/spec.md (Accent rationing).
+*/ -}}
+{{- $selected := "" -}}
+{{- if . -}}{{- if .InitialSelected -}}{{- $selected = .InitialSelected -}}{{- end -}}{{- end -}}
+<div role="radiogroup" aria-label="Theme" class="tt-theme-switch">
+  <button type="button" role="radio" data-theme-set="light"
+          class="btn btn-ghost tt-theme-seg"
+          aria-label="Light theme"
+          aria-pressed="{{if eq $selected "light"}}true{{else}}false{{end}}"
+          aria-checked="{{if eq $selected "light"}}true{{else}}false{{end}}">
+    <span class="tt-theme-seg-glyph" aria-hidden="true">&#x2600;</span>
+    <span class="tt-theme-seg-label">Light</span>
+  </button>
+  <button type="button" role="radio" data-theme-set="dark"
+          class="btn btn-ghost tt-theme-seg"
+          aria-label="Dark theme"
+          aria-pressed="{{if eq $selected "dark"}}true{{else}}false{{end}}"
+          aria-checked="{{if eq $selected "dark"}}true{{else}}false{{end}}">
+    <span class="tt-theme-seg-glyph" aria-hidden="true">&#x263E;</span>
+    <span class="tt-theme-seg-label">Dark</span>
+  </button>
+  <button type="button" role="radio" data-theme-set="system"
+          class="btn btn-ghost tt-theme-seg"
+          aria-label="Use system theme"
+          aria-pressed="{{if eq $selected "system"}}true{{else}}false{{end}}"
+          aria-checked="{{if eq $selected "system"}}true{{else}}false{{end}}">
+    <span class="tt-theme-seg-glyph" aria-hidden="true">&#x2318;</span>
+    <span class="tt-theme-seg-label">System</span>
+  </button>
+</div>
+{{end}}

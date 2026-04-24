@@ -5,11 +5,7 @@
     {{template "header_workspace_switcher" .}}
     <span style="flex:1"></span>
     <span aria-live="polite" id="global-status" class="muted"></span>
-    <nav aria-label="Theme">
-      <button type="button" class="btn btn-ghost" data-theme-set="light" aria-label="Light theme" aria-pressed="false">Light</button>
-      <button type="button" class="btn btn-ghost" data-theme-set="dark" aria-label="Dark theme" aria-pressed="false">Dark</button>
-      <button type="button" class="btn btn-ghost" data-theme-set="system" aria-label="Use system theme" aria-pressed="false">System</button>
-    </nav>
+    {{template "theme_switch" (dict)}}
     {{if .CurrentUser}}
       <form method="post" action="/logout" style="margin:0">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">

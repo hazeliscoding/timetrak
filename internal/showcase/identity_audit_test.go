@@ -63,7 +63,11 @@ func TestAccentRationingAudit(t *testing.T) {
 		// 7. Billable + running chips
 		".tt-chip-billable",
 		".tt-chip-running",
-		// 8. Running-entry card top border — reserved for follow-on change.
+		// 8. Selected theme-switch segment — answers "which theme is active?"
+		//    See ui-component-identity Accent rationing allow-list item 8.
+		`.tt-theme-seg[aria-pressed="true"]`,
+		`.tt-theme-seg[aria-pressed="true"]:hover`,
+		// 9. Running-entry card top border — reserved for follow-on change.
 	})
 
 	var violations []string
