@@ -81,9 +81,25 @@ Components **MUST** consume scale tokens instead of raw numeric values.
   `openspec/specs/ui-component-identity/spec.md`: pills = actions,
   rectangles = status/metadata, circles (`50%`) = presence dots. Do
   NOT use raw `999px` or equivalent literals for pill shapes.
-- **Typography** — `--font-sans`, `--font-mono`. Static size scale in
-  rem (`1rem`, `1.175rem`, `1.5rem`, `1.75rem`). No clamp-based fluid
-  scales.
+- **Typography** — `--font-sans`, `--font-mono`, plus three codified
+  sub-scales (see `openspec/specs/ui-foundation/spec.md`, Scale Tokens).
+  Component CSS **MUST** consume these tokens rather than raw values.
+  - **Size:** `--text-xs` (12px — chips, uppercase headers),
+    `--text-sm` (13px — nav, timer meta), `--text-md` (14px — hints,
+    field errors), `--text-base` (15px — body default),
+    `--text-lg` (16px — h3, emphasized body), `--text-xl` (~19px — h2),
+    `--text-2xl` (24px — h1), `--text-3xl` (28px — numeric summaries,
+    timer elapsed). Relative-to-parent `em` sizes on decorative glyph
+    spans are permitted.
+  - **Weight:** `--weight-regular` (400), `--weight-medium` (500),
+    `--weight-semibold` (600), `--weight-bold` (700).
+  - **Line height:** `--leading-none` (1 — chips, glyphs),
+    `--leading-tight` (1.1 — large numeric display),
+    `--leading-snug` (1.25 — headings), `--leading-normal` (1.5 — body
+    prose).
+
+  No clamp-based fluid scales. Adding a new size / weight / line-height
+  step requires amending the Scale Tokens requirement.
 - **Motion** — `--motion-duration-fast` (120ms), `--motion-duration-normal`
   (200ms), `--motion-easing-standard`. All motion **MUST** collapse to
   instant under `prefers-reduced-motion: reduce`.

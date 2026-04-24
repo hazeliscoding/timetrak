@@ -30,8 +30,8 @@
     background: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-sans);
-    font-size: 15px;
-    line-height: 1.5;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
   }
@@ -45,10 +45,10 @@
     border-radius: 2px;
   }
 
-  h1, h2, h3, h4 { margin: 0 0 var(--space-3); line-height: 1.25; }
-  h1 { font-size: 1.5rem; font-weight: 700; }
-  h2 { font-size: 1.175rem; font-weight: 600; }
-  h3 { font-size: 1rem; font-weight: 600; }
+  h1, h2, h3, h4 { margin: 0 0 var(--space-3); line-height: var(--leading-snug); }
+  h1 { font-size: var(--text-2xl); font-weight: var(--weight-bold); }
+  h2 { font-size: var(--text-xl); font-weight: var(--weight-semibold); }
+  h3 { font-size: var(--text-lg); font-weight: var(--weight-semibold); }
 
   p { margin: 0 0 var(--space-3); }
 
@@ -90,12 +90,12 @@
     display: flex; align-items: center; gap: var(--space-2);
     padding: var(--space-2) var(--space-4);
     color: var(--color-text); border-left: 3px solid transparent;
-    text-decoration: none; font-weight: 500;
+    text-decoration: none; font-weight: var(--weight-medium);
   }
   .nav a:hover { background: var(--color-surface-alt); }
   .nav a[aria-current="page"] {
     background: var(--color-accent-soft); color: var(--color-accent);
-    border-left-color: var(--color-accent); font-weight: 600;
+    border-left-color: var(--color-accent); font-weight: var(--weight-semibold);
   }
 
   /* Buttons */
@@ -104,7 +104,7 @@
     padding: var(--space-2) var(--space-4); min-height: 36px; min-width: 44px;
     border: 1px solid var(--color-border-strong); border-radius: var(--radius-pill);
     background: var(--color-surface); color: var(--color-text);
-    font: inherit; font-weight: 500; cursor: pointer;
+    font: inherit; font-weight: var(--weight-medium); cursor: pointer;
   }
   .btn:hover { background: var(--color-surface-alt); }
   /* #fff on --color-accent: white text on accent fill is the documented
@@ -117,9 +117,9 @@
 
   /* Forms */
   .field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
-  .field label { font-weight: 500; }
-  .field .hint { color: var(--color-text-muted); font-size: 0.875rem; }
-  .field .error { color: var(--color-danger); font-size: 0.875rem; }
+  .field label { font-weight: var(--weight-medium); }
+  .field .hint { color: var(--color-text-muted); font-size: var(--text-md); }
+  .field .error { color: var(--color-danger); font-size: var(--text-md); }
   .field input[type="text"], .field input[type="email"], .field input[type="password"],
   .field input[type="date"], .field input[type="time"], .field input[type="number"],
   .field select, .field textarea {
@@ -136,15 +136,15 @@
      See openspec/specs/ui-partials/spec.md (Table shell and empty state
      contract) and openspec/specs/ui-component-identity/spec.md. */
   .table { width: 100%; border-collapse: collapse; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
-  .table caption { text-align: left; padding: var(--space-3) var(--space-4); font-weight: 600; color: var(--color-text-muted); }
+  .table caption { text-align: left; padding: var(--space-3) var(--space-4); font-weight: var(--weight-semibold); color: var(--color-text-muted); }
   .table th, .table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border); text-align: left; }
   .table thead th {
     background: var(--color-surface-alt);
-    font-weight: 600; font-size: 0.75rem;
+    font-weight: var(--weight-semibold); font-size: var(--text-xs);
     letter-spacing: 0.04em; text-transform: uppercase;
     color: var(--color-text-muted);
   }
-  .table tbody th { font-weight: 600; font-size: 0.9375rem; }
+  .table tbody th { font-weight: var(--weight-semibold); font-size: var(--text-base); }
   .table tr:last-child td { border-bottom: 0; }
   .table tbody tr:hover { background: var(--color-surface-alt); }
   .table tbody tr:hover td, .table tbody tr:hover th { background: transparent; }
@@ -171,7 +171,7 @@
   .badge {
     display: inline-flex; align-items: center; gap: var(--space-1);
     padding: 2px var(--space-2); border-radius: var(--radius-sm);
-    font-size: 0.8125rem; font-weight: 500;
+    font-size: var(--text-sm); font-weight: var(--weight-medium);
     background: var(--color-surface-alt); color: var(--color-text); border: 1px solid var(--color-border);
   }
 
@@ -183,12 +183,12 @@
     display: inline-flex; align-items: center; gap: var(--space-1);
     height: 20px; padding: 0 var(--space-2);
     border-radius: var(--radius-sm);
-    font-size: 0.75rem; font-weight: 500; line-height: 1;
+    font-size: var(--text-xs); font-weight: var(--weight-medium); line-height: var(--leading-none);
     border: 1px solid var(--color-border);
     background: var(--color-surface); color: var(--color-text);
   }
-  .tt-chip-glyph { font-size: 0.75em; line-height: 1; }
-  .tt-chip-label { line-height: 1; }
+  .tt-chip-glyph { font-size: 0.75em; line-height: var(--leading-none); }
+  .tt-chip-label { line-height: var(--leading-none); }
 
   /* Variants — neutral outline vs soft filled. */
   .tt-chip-outlined { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text-muted); }
@@ -209,13 +209,13 @@
      text; that's the single allow-listed accent surface for this
      component. See openspec/specs/ui-component-identity/spec.md. */
   .tt-theme-switch { display: inline-flex; gap: var(--space-1); align-items: center; }
-  .tt-theme-seg-glyph { font-size: 0.9em; line-height: 1; }
-  .tt-theme-seg-label { line-height: 1; }
+  .tt-theme-seg-glyph { font-size: 0.9em; line-height: var(--leading-none); }
+  .tt-theme-seg-label { line-height: var(--leading-none); }
   .tt-theme-seg[aria-pressed="true"] {
     background: var(--color-accent-soft);
     color: var(--color-accent);
     border-color: var(--color-accent);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
   }
   .tt-theme-seg[aria-pressed="true"]:hover {
     background: var(--color-accent-soft);
@@ -260,14 +260,14 @@
     50%      { opacity: 0.5; transform: scale(0.85); }
   }
   .tt-timer-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .tt-timer-meta { font-size: 0.875rem; display: flex; align-items: baseline; gap: var(--space-1); flex-wrap: wrap; }
+  .tt-timer-meta { font-size: var(--text-md); display: flex; align-items: baseline; gap: var(--space-1); flex-wrap: wrap; }
   .tt-timer-elapsed {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-size: 1.75rem; font-weight: 700; line-height: 1.1;
+    font-size: var(--text-3xl); font-weight: var(--weight-bold); line-height: var(--leading-tight);
     color: var(--color-accent);
   }
-  .tt-timer-started { font-size: 0.8125rem; }
+  .tt-timer-started { font-size: var(--text-sm); }
   .tt-timer-stop { margin-left: auto; }
 
   /* Grandfathered .timer + .elapsed kept only for any non-partial usage
@@ -277,7 +277,7 @@
     padding: var(--space-4) var(--space-5); border: 1px solid var(--color-border);
     border-radius: var(--radius-md); background: var(--color-surface);
   }
-  .timer .elapsed { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 1.75rem; font-weight: 700; }
+  .timer .elapsed { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: var(--text-3xl); font-weight: var(--weight-bold); }
 
   /* Empty state */
   .empty { text-align: center; padding: var(--space-8) var(--space-5); color: var(--color-text-muted); }

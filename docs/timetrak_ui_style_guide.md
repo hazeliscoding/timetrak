@@ -131,13 +131,27 @@ Examples:
 - system-ui stack
 
 ### Type Hierarchy
-- Page title: bold, large, clearly distinct
-- Section title: medium-large, semibold
-- Card title: medium, semibold
-- Body text: regular
-- Secondary text: muted but still readable
-- Helper text: slightly smaller, readable contrast
-- Numeric summaries: large, bold, tabular if possible
+
+Each role below maps to a concrete `--text-*` / `--weight-*` token pair
+codified in `web/static/css/tokens.css`. See
+`openspec/specs/ui-foundation/spec.md` (Scale Tokens → Typography) for
+the full enumeration; component CSS MUST consume these tokens, not raw
+values.
+
+| Role | Size token | Weight token | Notes |
+|---|---|---|---|
+| Page title (`h1`) | `--text-2xl` | `--weight-bold` | One per page. |
+| Section title (`h2`) | `--text-xl` | `--weight-semibold` | — |
+| Card title (`h3`) | `--text-lg` | `--weight-semibold` | — |
+| Body text | `--text-base` | `--weight-regular` | Root body size. |
+| Secondary / muted | `--text-md` | `--weight-regular` | Pair with `.muted`. |
+| Helper / hint | `--text-md` | `--weight-regular` | Pair with `.muted`. |
+| Field label | `--text-base` | `--weight-medium` | — |
+| Table body cell | `--text-base` | `--weight-regular` | |
+| Table header (`th`) | `--text-xs` | `--weight-semibold` | Uppercase, letter-spaced. |
+| Chip label | `--text-xs` | `--weight-medium` | |
+| Nav / meta | `--text-sm` | `--weight-medium` | |
+| Numeric summary | `--text-3xl` | `--weight-bold` | `tabular-nums`, mono. |
 
 ### Rules
 - Avoid oversized headings

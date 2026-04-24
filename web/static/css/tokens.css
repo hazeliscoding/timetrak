@@ -151,9 +151,35 @@
   --radius-md:   12px;
   --radius-pill: 999px;
 
-  /* Typography. Static scale — no clamp-based fluid sizes. */
+  /* Typography. Static scale — no clamp-based fluid sizes.
+     The size / weight / line-height scales below are codified by
+     openspec/specs/ui-foundation/spec.md (Scale Tokens). Additions
+     require a change proposal that amends that requirement. */
   --font-sans: Inter, "Helvetica Neue", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Type size scale. Units are rem against the root 16px; the body
+     redefines its own size to 15px (= --text-base) in app.css. */
+  --text-xs:    0.75rem;    /* 12px — chips, uppercase table headers */
+  --text-sm:    0.8125rem;  /* 13px — nav, timer meta, "started at" */
+  --text-md:    0.875rem;   /* 14px — hints, field errors, muted secondary */
+  --text-base:  0.9375rem;  /* 15px — body default, table body strong */
+  --text-lg:    1rem;       /* 16px — h3, normal-weight emphasized */
+  --text-xl:    1.175rem;   /* ~19px — h2 */
+  --text-2xl:   1.5rem;     /* 24px — h1 */
+  --text-3xl:   1.75rem;    /* 28px — timer elapsed, numeric summaries */
+
+  /* Type weight scale. */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* Line height scale. */
+  --leading-none:   1;     /* chips, glyphs, single-line compact controls */
+  --leading-tight:  1.1;   /* large numeric display */
+  --leading-snug:   1.25;  /* headings */
+  --leading-normal: 1.5;   /* body prose */
 
   /* Motion. Components MUST collapse to instant under prefers-reduced-motion. */
   --motion-duration-fast:   120ms;
